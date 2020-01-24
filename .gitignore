@@ -4,7 +4,10 @@ dream_data/
 dream_aml.Rproj
 .Rproj.user/
 .idea/
+features/*
 
+!features/alex_phenotypes.RData
+!features/alex_features.RData
 !chembl/.gitkeep
 !resources/.gitkeep
 !resources/survival_alex.R
