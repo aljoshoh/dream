@@ -7,8 +7,8 @@ rna <- get_features("features/alex_features.RData")
 
 CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = 5, seed = 123)
 
-list_glm <- make_fit(feature_matrix = rna, phenotype_matrix = auc[,1:1,drop=F], folds = CV,
-                 method = "glm", 
+list_glm <- make_fit(feature_matrix = rna[,1:12], phenotype_matrix = auc[,1:1,drop=F], folds = CV,
+                 method = "dnn", 
                  hyperparam = c("alpha"=0.5))
 
 

@@ -113,6 +113,11 @@ make_fit <- function(
   if(!is.matrix(phenotype_matrix)){stop("The feature matrix is not a numerical matrix !")}
   if(length(folds$test_set) != length(folds$train_set)){stop("Folds of testing and training do not match !")}
   
+  message("Initialize Method ...")
+  if(method %in% c("rf","dnn")){
+    h2o.init()
+  }
+  
   message("Starting to fit ",method," ...")
   score <- matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix))
   param <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
@@ -121,8 +126,9 @@ make_fit <- function(
     for(i in 1:length(folds$train_set)){
       
       message(paste0("...for fold ",as.character(i)))
-      y_train <- (phenotype_matrix[folds$train_sets[[i]],j, drop=F])[!is.na(phenotype_matrix[folds$train_sets[[i]],j]),]
-      x_train <- feature_matrix[names(y_train),]
+      y_name <- as.character(colnames(phenotype_matrix)[j])
+      y_train <- (phenotype_matrix[folds$train_sets[[i]],j, drop=F])[!is.na(phenotype_matrix[folds$train_sets[[i]],j]),,drop = F]
+      x_train <- feature_matrix[names(y_train[,y_name]),]
       
       message(paste0("        response has length ",as.character(length(y_train))," !"))
       x_test <- feature_matrix[folds$test_sets[[i]],]
@@ -132,16 +138,24 @@ make_fit <- function(
       if(method == "glm"){
         model <- use_glm(x_train, y_train, x_test, y_test,
                          hyperparam = hyperparam,
-                         y_name = as.character(colnames(phenotype_matrix)[j])
+                         y_name = y_name
                          )
       }
       
       if(method == "rf"){
         model <- use_rf(x_train, y_train, x_test, y_test,
                         hyperparam = hyperparam,
-                        y_name = as.character(colnames(phenotype_matrix)[j]),
+                        y_name = y_name,
                         seed = seed
                         )
+      }
+      
+      if(method == "dnn"){
+        model <- use_rf(x_train, y_train, x_test, y_test,
+                        hyperparam = hyperparam,
+                        y_name = as.character(colnames(phenotype_matrix)[j]),
+                        seed = seed
+        )
       }
       #######################METHOD
       mse <- mean(model$diff*model$diff)
@@ -150,6 +164,11 @@ make_fit <- function(
       score[i,j] <- cor
       param[[i,j]] <- list(model$fit) #<- here we can either asses feature weights, or store other things from model$
     }
+  }
+  
+  message("End method ...")
+  if(method %in% c("rf","dnn")){
+    h2o.shutdown(prompt = F)
   }
 
   return(list(score=score,
@@ -172,6 +191,7 @@ use_glm <- function(
   seed = F
 ){
   alpha = hyperparam["alpha"]
+  y_train <- y_train[,as.character(y_name)]
   
   message("        Fitting...")
   fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha)
@@ -185,7 +205,7 @@ use_glm <- function(
 
 
 use_rf <- function(
-  ### Linear Method
+  ### Random Forst
   ### TODO
   ### -return interesting model parameter
   ### -tune rf parameter
@@ -198,23 +218,47 @@ use_rf <- function(
   y_name=y_name,
   seed = 123
 ){
-  h2o.init()
   hyperparams_rf = NULL
-  df <- cbind(x_train,y_train)
+  dff <- cbind(x_train,y_train)
   
   message("        Fitting...")
-  fit <- h2o.randomForest(x = colnames(x_train), y = names(y_train), training_frame = as.h2o(df), seed = seed)
+  fit <- h2o.randomForest(x = colnames(x_train), y = y_name, training_frame = as.h2o(dff), seed = seed)
   
   message("        Validating...")
   pred <- predict(fit, as.h2o(x_test))
   pred <- as.data.frame(pred)[,1]
   diff <- pred - y_test
-  h2o.shutdown()
   
   return(list(pred=pred, diff=diff, fit=fit))
 }######################################################
 
 
-
+use_dnn <- function(
+  ### Deep Neural Net
+  ### TODO
+  ### -return interesting model parameter
+  ### -tune rf parameter
+  ######################################################
+  x_train=x_train,
+  y_train=y_train,
+  x_test=x_test,
+  y_test=y_test,
+  hyperparam=hyperparam,
+  y_name=y_name,
+  seed = 123
+){
+  hyperparams_rf = NULL
+  dff <- cbind(x_train,y_train)
+  
+  message("        Fitting...")
+  fit <- h2o.deeplearning (x = colnames(x_train), y = y_name, training_frame = as.h2o(dff), seed = seed)
+  
+  message("        Validating...")
+  pred <- predict(fit, as.h2o(x_test))
+  pred <- as.data.frame(pred)[,1]
+  diff <- pred - y_test
+  
+  return(list(pred=pred, diff=diff, fit=fit))
+}######################################################
 
 
