@@ -1,5 +1,5 @@
-resources/
-chembl/
+resources/*
+chembl/*
 dream_data/
 dream_aml.Rproj
 .Rproj.user/
