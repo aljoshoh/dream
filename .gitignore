@@ -7,3 +7,4 @@ dream_aml.Rproj
 
 !chembl/.gitkeep
 !resources/.gitkeep
+!resources/survival_alex.R
