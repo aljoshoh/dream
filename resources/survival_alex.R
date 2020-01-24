@@ -7,110 +7,6 @@ library(dplyr)
 library(survival)
 library(cometExactTest)
 
-aggregate_bem <- function(
-  ###
-  ### TODO 
-  ### 
-  ######################################################
-  bem = bem, # binary event matrix with characters, names do not matter
-  names_bem = alt_names, # colnames of bem, such that some are duplicated
-  type_bem = alt_type # type of alteration
-){
-  names_bem <- unlist(lapply(1:length(names_bem), function(x) paste(names_bem[x],type_bem[x],sep="_")))
-  if(length(colnames(bem)) != length(names_bem) & length(colnames(bem)) != length(type_bem))
-    stop("Dimensions of inputs do not match !")
-  names <- unique(names_bem)
-  new_bem <- as.data.frame(matrix(nrow = nrow(bem), ncol=length(names)))
-  for(i in 1:ncol(new_bem)){
-    name <- names[i]
-    index <- which(names_bem == name)
-    bem_name <- bem[,index]
-    if(is.null(dim(bem_name))){
-      new_bem[,i] <- bem_name
-    } else {
-      new_bem[,i] <- apply(bem_name, 1, function(x) as.character(as.numeric((any(x == "1")))))
-    }
-  }
-  colnames(new_bem) = names
-  row.names(new_bem) = row.names(bem)
-  return(new_bem)
-}######################################################
-
-
-combinations_bem <- function(
-  ### names of filter must mach with the names defined here in the function, the sep="_or_"
-  ### TODO
-  ### think about not combinations
-  ### assign permutative significance
-  ###
-  ######################################################
-  bem = bem, # binary event matrix with characters, names do not matter
-  logic = "or", # alternatively, "and"
-  min_altered = 4,
-  filter = NULL # array of names of columnes of $bem
-){
-  bem <- data.matrix(bem)
-  frequency <- apply(bem, 2, function(x) sum(x))
-  frequency <- frequency[frequency >= min_altered]
-  print(paste("The number of combinations will be: ",as.character(length(frequency)*(length(frequency)-1)/2),sep=""))
-  
-  bem_min <<- bem[, apply(bem, 2, function(x) sum(x)) > min_altered]
-  
-  print("Starting pairwise AND/OR calculation...")
-  combinations <- combn(1:ncol(bem_min),2)
-  nm1 <- unlist(lapply(1:ncol(combinations), function(x) paste(colnames(bem_min)[combinations[1,x]],colnames(bem_min)[combinations[2,x]],sep="_or_")))
-  if(logic == "or"){
-    res <- lapply(1:ncol(combinations), function(x) unlist(as.character(as.numeric(
-      as.logical(bem_min[,combinations[1,x]]) | as.logical(bem_min[,combinations[2,x]]) 
-    )))
-    )
-  }
-  if(logic == "and"){
-    res <- lapply(1:ncol(combinations), function(x) unlist(as.character(as.numeric(
-      as.logical(bem_min[,combinations[1,x]]) & as.logical(bem_min[,combinations[2,x]])
-    )))
-    )
-  }
-  res <- as.data.frame(res)
-  colnames(res) <- nm1
-  row.names(res) <- row.names(bem)
-  return(res[,filter])
-}######################################################
-
-exclusivity_bem <- function(
-  ###
-  ### TODO 
-  ### think about not combinations
-  ### assign permutative significance
-  ###
-  ######################################################
-  bem = bem, # binary event matrix with characters, names do not matter
-  logic = "exclusivity", # alternatively, "and"
-  min_altered = 4
-){
-  bem <- data.matrix(bem)
-  frequency <- apply(bem, 2, function(x) sum(na.omit(x)))
-  frequency <- frequency[frequency >= min_altered]
-  print(paste("The number of comparisions will be: ",as.character(length(frequency)*(length(frequency)-1)/2),sep=""))
-  
-  bem_min <<- bem[, as.logical(apply(bem, 2, function(x) sum(na.omit(x))) > min_altered)]
-  
-  print("Starting mutual exclusivity calculation...")
-  combinations <- combn(1:ncol(bem_min),2)
-  nm1 <- unlist(lapply(1:ncol(combinations), function(x) paste(colnames(bem_min)[combinations[1,x]],colnames(bem_min)[combinations[2,x]],sep="_or_")))
-  
-  if(logic == "exclusivity"){
-    res <- lapply(1:ncol(combinations), function(x){
-      comet_exact_test(table(bem_min[,combinations[1,x]], bem_min[,combinations[2,x]]) )
-    }
-    )
-  }
-  
-  res <- unlist(res)
-  names(res) <- nm1
-  res_adj <- p.adjust(res, method = "BH")
-  return(list(pval=res, fdr=res_adj, names=names(res)))
-}######################################################
 
 plot_cox <- function(
   ### Plots the curves and gives resume statistics
@@ -158,8 +54,8 @@ plot_cox <- function(
     temp_response$covariates <- rep(1, length(temp_response$biomarker))
     if(!(n1 < N | n2 < N)){ # if not minimal amount of mutants are present in one of the investigated populations
       if(survival == "OS"){
-        cox <- coxph(as.formula(paste("Surv(OS.months, OS.event) ~ biomarker",covariates, sep="")), data = temp_response)
-        km_fit <- survfit(as.formula(paste("Surv(OS.months, OS.event) ~ biomarker","", sep="")), data = temp_response)
+        cox <- coxph(as.formula(paste("Surv(overallSurvival, vitalStatus) ~ biomarker",covariates, sep="")), data = temp_response)
+        km_fit <- survfit(as.formula(paste("Surv(overallSurvival, vitalStatus) ~ biomarker","", sep="")), data = temp_response)
       }
       if(survival == "PFS"){
         cox <- coxph(as.formula(paste("Surv(PFS.months, PFS.event) ~ biomarker",covariates,sep="")), data = temp_response)
@@ -347,26 +243,7 @@ loadRData <- function(fileName){
 ############################################################################################################
 
 
-
-
-
-
-source("scratch/functions.R")
 library(foreign)
-
-# What fraction is present in the list
-fot <- function(x){return(paste("Fraction of TRUE is:", if(length(which(x))/length(x)*100 > 1){floor(length(which(x))/length(x)*100)} else {length(which(x))/length(x)*100},"%",sep=" "))}
-
-sav <- read.spss("Data/SPSS/FIRE3_Menden_Set.sav", to.data.frame = T)
-# Bevacizumab treatment
-fot(sav$treatment == "FOLFIRI+Bevacizumab")
-#
-
-
-
-
-
-
 # Survival Analysis
 library(survival)
 library(ranger)
@@ -378,30 +255,38 @@ library(Hmisc)
 library(ggplot2)
 library(ggrepel)
 
+
+#Import clinical response
+sav <- read.csv("dream_data/response.csv")
+clin_feat_filter <- clin_feat_cat[clin_feat_cat$lab_id %in% sav$lab_id, ]
+row.names(clin_feat_filter) = clin_feat_filter$lab_id
+clin_feat_filter <- clin_feat_filter[as.character(sav$lab_id),]
+sav <- cbind(sav, clin_feat_filter)
+sav$vitalStatus <- as.numeric(factor(sav$vitalStatus))
+
 # Overall
-km_fit <- survfit(Surv(sav$OS.months, sav$OS.event) ~ 1, data=sav)
-summary(km_fit, times = min(na.omit(sav$OS.months)):max(na.omit(sav$OS.months)))
+km_fit <- survfit(Surv(sav$overallSurvival, sav$vitalStatus) ~ 1, data=sav)
+summary(km_fit, times = min(na.omit(sav$overallSurvival)):max(na.omit(sav$overallSurvival)))
 autoplot(km_fit)
 
 # By treatment
-km_trt_fit <- survfit(Surv(OS.months, OS.event) ~ treatment, data=sav)
+km_trt_fit <- survfit(Surv(overallSurvival, sav$vitalStatus) ~ sav$priorMPN, data=sav)
 autoplot(km_trt_fit)
 # By CMS subtype
-km_cms_fit <- survfit(Surv(OS.months, OS.event) ~ primary.site, data=sav_cetuximab)
+km_cms_fit <- survfit(Surv(overallSurvival, vitalStatus) ~ sav$priorMalignancyNonMyeloid, data=sav)
 autoplot(km_cms_fit)
 
-sav$CMS <- factor(sav$CMS)
-# Stratifiy for treatment
+# Stratifiy for treatment / not needed
 sav_bevacizumab <- sav[sav$treatment == "FOLFIRI+Bevacizumab",]
 sav_cetuximab <- sav[sav$treatment == "FOLFIRI+Cetuximab",]
 
 # Cox-Hazard Ratio Model
-cox <- coxph(Surv(OS.months, OS.event) ~ CMS + primary.site + metastatic.sites+ age, data = sav_cetuximab)
+cox <- coxph(Surv(overallSurvival, vitalStatus) ~ sav$Karyotype, data = sav)
 summary(cox)
 autoplot(survfit(cox))
 
-# Time-dependent covariates
-aa_fit <-aareg(Surv(OS.months, OS.event) ~ treatment + CMS, data = sav_cetuximab)
+# Time-dependent covariates, just a try here
+aa_fit <-aareg(Surv(overallSurvival, vitalStatus) ~ treatment + CMS, data = sav_cetuximab)
 autoplot(aa_fit); aa_fit
 
 
