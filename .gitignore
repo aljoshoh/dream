@@ -3,7 +3,7 @@ chembl/
 dream_data/
 dream_aml.Rproj
 .Rproj.user/
-.ideal/
+.idea/
 
 !chembl/.gitkeep
 !resources/.gitkeep
