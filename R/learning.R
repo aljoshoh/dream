@@ -107,6 +107,7 @@ make_fit <- function(
   FUN = function(x){return(x)}, # Pass filtering function for cv sets internally, default is identity function
   hyperparam = c("alpha"=0.5), # Hyperparamter for methods
   method = "glm", # Method
+  cvglm = F, # If glm should be cross-validated for the lambda parameter, e.g. for benchmarking
   seed = 123 # Seed for RF method
 ){
   if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}
@@ -134,11 +135,13 @@ make_fit <- function(
       x_test <- feature_matrix[folds$test_sets[[i]],]
       y_test <- phenotype_matrix[ folds$test_sets[[i]] ,j]
       
+      set.seed(seed)
       #######################METHOD
       if(method == "glm"){
         model <- use_glm(x_train, y_train, x_test, y_test,
                          hyperparam = hyperparam,
-                         y_name = y_name
+                         y_name = y_name,
+                         cvglm = cvglm
                          )
       }
       
@@ -188,17 +191,27 @@ use_glm <- function(
   y_test=y_test,
   hyperparam=hyperparam,
   y_name=y_name,
-  seed = F
+  seed = F,
+  cvglm = T
 ){
   alpha = hyperparam["alpha"]
   y_train <- y_train[,as.character(y_name)]
   
   message("        Fitting...")
-  fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha)
+  if(cvglm ==T){
+    fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha)
+  }else{
+    fit <- glmnet::glmnet(x = x_train, y = y_train, alpha = alpha)
+  }
   
   message("        Validating...")
-  pred <- predict(fit, x_test, s = 'lambda.min')
-  diff <- pred - y_test
+  if(cvglm ==T){
+    pred <- predict(fit, x_test, s = 'lambda.min')
+    diff <- pred - y_test
+  }else{
+    pred <- NULL
+    diff <- NULL
+  }
   
   return(list(pred=pred, diff=diff, fit=fit))
 }######################################################
@@ -262,3 +275,87 @@ use_dnn <- function(
 }######################################################
 
 
+
+
+
+make_fit_whole <- function(
+  ### Makes the model fit on the whole data
+  ### Creates a list of length 2 with kfold elements, each 
+  ### TODO
+  ### -return interesting model parameter
+  ######################################################
+  feature_matrix = NULL, # Numerical feature matrix
+  phenotype_matrix = NULL, # Numerical pheontype matrix 
+  FUN = function(x){return(x)}, # Pass filtering function for cv sets internally, default is identity function
+  hyperparam = c("alpha"=0.5), # Hyperparamter for methods
+  method = "glm", # Method
+  seed = 123 # Seed for RF method
+){
+  if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}
+  if(!is.matrix(phenotype_matrix)){stop("The feature matrix is not a numerical matrix !")}
+  intersect <- intersect(row.names(feature_matrix), row.names(phenotype_matrix))
+  
+  message("Initialize Method ...")
+  if(method %in% c("rf","dnn")){
+    h2o.init()
+  }
+  
+  message("Starting to fit ",method," ...")
+  score <- matrix(NA,nrow = 1, ncol = ncol(phenotype_matrix))
+  param <- as.data.frame(matrix(NA,nrow = 1, ncol = ncol(phenotype_matrix)))
+  for(j in 1:ncol(phenotype_matrix)){
+    message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
+    for(i in 1:1){
+      
+      message(paste0("...for fold ",as.character(i)))
+      y_name <- as.character(colnames(phenotype_matrix)[j])
+      y_train <- (phenotype_matrix[intersect,j, drop=F])[!is.na(phenotype_matrix[intersect,j]),,drop = F]
+      x_train <- feature_matrix[names(y_train[,y_name]),]
+      
+      message(paste0("        response has length ",as.character(length(y_train))," !"))
+      x_test <- NULL #feature_matrix[intersect,]
+      y_test <- NULL #phenotype_matrix[ intersect ,j]
+      
+      set.seed(seed)
+      #######################METHOD
+      if(method == "glm"){
+        model <- use_glm(x_train, y_train, x_test, y_test,
+                            hyperparam = hyperparam,
+                            y_name = y_name,
+                            cvglm = F
+        )
+      }
+      
+      if(method == "rf"){
+        model <- use_rf(x_train, y_train, x_test, y_test,
+                        hyperparam = hyperparam,
+                        y_name = y_name,
+                        seed = seed
+        )
+      }
+      
+      if(method == "dnn"){
+        model <- use_rf(x_train, y_train, x_test, y_test,
+                        hyperparam = hyperparam,
+                        y_name = as.character(colnames(phenotype_matrix)[j]),
+                        seed = seed
+        )
+      }
+      #######################METHOD
+      mse <- NA
+      cor <- NA
+      
+      score[i,j] <- cor
+      param[[i,j]] <- list(model$fit) #<- here we can either asses feature weights, or store other things from model$
+    }
+  }
+  
+  message("End method ...")
+  if(method %in% c("rf","dnn")){
+    h2o.shutdown(prompt = F)
+  }
+  
+  return(list(score=score,
+              param = param
+  ))
+}######################################################
