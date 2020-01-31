@@ -69,4 +69,4 @@ selectGen = function(gen_sig_list) {
   return(gen_selected)
 }
 
-
+test = AnvSigGen(rnaseq, auc)
