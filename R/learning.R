@@ -104,7 +104,7 @@ make_fit <- function(
   feature_matrix = NULL, # Numerical feature matrix
   phenotype_matrix = NULL, # Numerical pheontype matrix 
   folds = NULL, # fold object created in last step
-  FUN = function(x){return(x)}, # Pass filtering function for cv sets internally, default is identity function
+  FUN = function(x,y){return(x)}, # Pass filtering function for cv sets internally, default is identity function
   hyperparam = c("alpha"=0.5), # Hyperparamter for methods
   method = "glm", # Method
   cvglm = F, # If glm should be cross-validated for the lambda parameter, e.g. for benchmarking
@@ -123,11 +123,17 @@ make_fit <- function(
   message("Starting to fit ",method," ...")
   score <- matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix))
   param <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
-  for(j in 1:ncol(phenotype_matrix)){
-    message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
-    for(i in 1:length(folds$train_set)){
-      
+  for(i in 1:length(folds$train_set)){
+    
+    ########PHONG METHOD
+    feature_matrix <- FUN(feature_matrix[folds$train_sets[[i]],], phenotype_matrix[folds$train_sets[[i]],])
+    ####################
+    
+    #########BIG FOR LOOP
+    for(j in 1:ncol(phenotype_matrix)){
       message(paste0("...for fold ",as.character(i)))
+      message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
+      
       y_name <- as.character(colnames(phenotype_matrix)[j])
       y_train <- (phenotype_matrix[folds$train_sets[[i]],j, drop=F])[!is.na(phenotype_matrix[folds$train_sets[[i]],j]),,drop = F]
       x_train <- feature_matrix[names(y_train[,y_name]),]
@@ -161,7 +167,7 @@ make_fit <- function(
                         seed = seed
         )
       }
-      #######################METHOD
+      ############################
       mse <- mean(model$diff*model$diff)
       cor <- cor(model$pred, y_test, use = "complete.obs")
       
@@ -172,6 +178,7 @@ make_fit <- function(
         param[i,j] <- model$fit$lambda.min
       }
     }
+    ##################
   }
   
   message("End method ...")
@@ -265,6 +272,6 @@ make_fit_whole <- function(
   }
   
   return(list(score=score,
-              param = param
+              param = param # returns the whole fit object
   ))
 }######################################################

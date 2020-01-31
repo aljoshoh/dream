@@ -18,6 +18,8 @@ rna <- rnaseq
 row.names(rna) = rnaseq$Gene
 rna <- rna[,-c(1,2)] %>% t
 dnaseq <- read.csv("dream_data/dnaseq.csv")
+dnaseq$value <- 1
+dnaseq <- spread(data = dnaseq[,c("lab_id","Hugo_Symbol","value")], key = Hugo_Symbol, value = value)
 auc <- read.csv("dream_data/aucs.csv")
 auc <- spread(data=auc, key=inhibitor, value=auc)
 row.names(auc) = make.names(auc$lab_id)
@@ -28,6 +30,8 @@ clin_feat_cat <- read.csv("dream_data/clinical_categorical.csv")
 clin_feat_legend <- read.csv("dream_data/clinical_categorical_legend.csv")
 clin_feat_num <- read.csv("dream_data/clinical_numerical.csv")
 
+
+tmp <- table(dnaseq$lab_id, dnaseq$Hugo_Symbol)
 ### Use string database to filter for informative genes by network propagation of drug targets
 ### Use morgan fingerprints of drugs that are used
 
