@@ -39,3 +39,7 @@ tmp <- table(dnaseq$lab_id, dnaseq$Hugo_Symbol)
 
 View(list$score)
 
+
+## PHONG
+test <-  AnvSigGen(as.matrix(rna[,1:20]), as.matrix(auc))
+

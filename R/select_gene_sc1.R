@@ -5,7 +5,7 @@ AnvSigGen = function(rnaseq, auc){
   #rnaseq: matrix of gene expression data, with samples as rows and genes as columns
   #auc: matrix of drug data, samples as rows and drug as columns
   
-  if (rownames(rnaseq) != rownames(auc)) {
+  if (any(rownames(rnaseq) != rownames(auc))) {
     auc = auc[rownames(rnaseq), ]
   }
   

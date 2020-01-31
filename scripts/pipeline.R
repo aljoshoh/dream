@@ -1,14 +1,17 @@
 ### Small scratch on how to use the source codes in R/
+### Pipeline on predicting a response matrix based on a feature matrix
 
-
+### Dump dataframes $rna $auc in the features folder/
 dump_features(rna, "features/alex_features.RData")
 dump_features(auc, "features/alex_phenotypes.RData")
 
+### Import objects again
 auc <- get_features("features/alex_phenotypes.RData")
 rna <- get_features("features/alex_features.RData")
 
 
-CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = 5, seed = 124)
+### Cross-Validation initiation
+CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = 10, seed = 124)
 
 list_glm <- make_fit(feature_matrix = rna[,1:12], phenotype_matrix = auc[,1:1,drop=F], folds = CV,
                  method = "glm", 
