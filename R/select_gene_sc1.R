@@ -1,6 +1,6 @@
 library(dplyr)
 
-AnvSigGen = function(rnaseq, auc){
+AnvSigGen = function(rnaseq, auc, min_drugs = 10){
   
   #rnaseq: matrix of gene expression data, with samples as rows and genes as columns
   #auc: matrix of drug data, samples as rows and drug as columns
@@ -46,14 +46,14 @@ AnvSigGen = function(rnaseq, auc){
     }
   }
   
-  sig = selectGen(gen_sig)
+  sig = selectGen(gen_sig, min_drugs = min_drugs)
   rnaseq_sub = rnaseq[, sig] 
   
   return(rnaseq_sub)
   
 }
 
-selectGen = function(gen_sig_list) {
+selectGen = function(gen_sig_list, min_drugs = 10) {
   
   #gen_sig_list: a list of significant genes that explain AUC variation for each drug
   
@@ -61,7 +61,7 @@ selectGen = function(gen_sig_list) {
   gen_sig_vec = unlist(gen_sig_list)
   for (i in 1:length(gen_sig_vec)){
     gen = gen_sig_vec[i]
-    if (length(gen_sig_vec[gen_sig_vec == gen]) >= 10) {
+    if (length(gen_sig_vec[gen_sig_vec == gen]) >= min_drugs) {
       gen_selected = c(gen_selected, gen)
     }
   }

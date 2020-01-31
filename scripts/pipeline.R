@@ -4,22 +4,23 @@ submit <- F
 
 
 if(submit){
+  ### Set working directory
   setwd("/storage/groups/cbm01/workspace/dream_aml/")
+  
+  ### Import objects
+  auc <- get_features("features/alex_phenotypes.RData")
+  rna <- get_features("features/alex_features.RData")
 }
 
 ### Dump dataframes $rna $auc in the features folder/
-#dump_features(rna, "features/alex_features.RData")
-#dump_features(auc, "features/alex_phenotypes.RData")
-
-### Import objects again
-auc <- get_features("features/alex_phenotypes.RData")
-rna <- get_features("features/alex_features.RData")
-
+  #dump_features(rna, "features/alex_features.RData")
+  #dump_features(auc, "features/alex_phenotypes.RData")
 
 ### Cross-Validation initiation
 CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = 10, seed = 124)
 
-list_glm <- make_fit(feature_matrix = rna[,1:100], phenotype_matrix = auc[,1:2,drop=F], folds = CV,
+### Run method
+list_glm <- make_fit(feature_matrix = rna, phenotype_matrix = auc[,1:11,drop=F], folds = CV,
                  method = "glm", 
                  hyperparam = c("alpha"=0.5),
                  cvglm = T, FUN = AnvSigGen)
@@ -46,9 +47,9 @@ points(log(list_glm$param[2,drug][[1]][[1]]$lambda),list_glm$param[2,drug][[1]][
 points(log(list_glm$param[3,drug][[1]][[1]]$lambda),list_glm$param[3,drug][[1]][[1]]$cvm,pch=19,col="blue")
 points(log(list_glm$param[4,drug][[1]][[1]]$lambda),list_glm$param[4,drug][[1]][[1]]$cvm,pch=19,col="purple")
 points(log(list_glm$param[5,drug][[1]][[1]]$lambda),list_glm$param[5,drug][[1]][[1]]$cvm,pch=19,col="green")
-#legend("topleft",legend=c("alpha= 1","alpha= .5","alpha 0"),pch=19,col=c("red","grey","blue"))
 
 
+### Train whole model 
 list_glm_whole <- make_fit_whole(feature_matrix = GEXred,
                                  phenotype_matrix = map[,1:5, drop=F],
                                  method = "glm",
