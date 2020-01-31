@@ -1,3 +1,6 @@
+### Small scratch on how to use the source codes in R/
+
+
 dump_features(rna, "features/alex_features.RData")
 dump_features(auc, "features/alex_phenotypes.RData")
 
