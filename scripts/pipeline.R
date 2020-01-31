@@ -1,9 +1,15 @@
 ### Small scratch on how to use the source codes in R/
 ### Pipeline on predicting a response matrix based on a feature matrix
+submit <- F
+
+
+if(submit){
+  setwd("/storage/groups/cbm01/workspace/dream_aml/")
+}
 
 ### Dump dataframes $rna $auc in the features folder/
-dump_features(rna, "features/alex_features.RData")
-dump_features(auc, "features/alex_phenotypes.RData")
+#dump_features(rna, "features/alex_features.RData")
+#dump_features(auc, "features/alex_phenotypes.RData")
 
 ### Import objects again
 auc <- get_features("features/alex_phenotypes.RData")
@@ -13,10 +19,10 @@ rna <- get_features("features/alex_features.RData")
 ### Cross-Validation initiation
 CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = 10, seed = 124)
 
-list_glm <- make_fit(feature_matrix = rna[,1:12], phenotype_matrix = auc[,1:1,drop=F], folds = CV,
+list_glm <- make_fit(feature_matrix = rna[,1:100], phenotype_matrix = auc[,1:2,drop=F], folds = CV,
                  method = "glm", 
                  hyperparam = c("alpha"=0.5),
-                 cvglm = T)
+                 cvglm = T, FUN = AnvSigGen)
 
 
 

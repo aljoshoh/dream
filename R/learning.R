@@ -122,12 +122,17 @@ make_fit <- function(
   
   message("Starting to fit ",method," ...")
   score <- matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix))
+  gene_names_filtered <- list()
   param <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
   for(i in 1:length(folds$train_set)){
     
     ########PHONG METHOD
-    feature_matrix <- FUN(feature_matrix[folds$train_sets[[i]],], phenotype_matrix[folds$train_sets[[i]],])
-    ####################
+    message(paste0("Executing feature selection for fold ",as.character(i)))
+    test <<- feature_matrix[folds$train_sets[[i]],]
+    FILTER_FEATURE_NAMES <- colnames(FUN(rnaseq=feature_matrix[folds$train_sets[[i]],], auc=phenotype_matrix[folds$train_sets[[i]],]))
+    ####################                  ^change name in Anv-method
+    message(paste0("-> Found ",as.character(length(FILTER_FEATURE_NAMES))," genes !"))
+    
     
     #########BIG FOR LOOP
     for(j in 1:ncol(phenotype_matrix)){
@@ -136,10 +141,10 @@ make_fit <- function(
       
       y_name <- as.character(colnames(phenotype_matrix)[j])
       y_train <- (phenotype_matrix[folds$train_sets[[i]],j, drop=F])[!is.na(phenotype_matrix[folds$train_sets[[i]],j]),,drop = F]
-      x_train <- feature_matrix[names(y_train[,y_name]),]
+      x_train <- feature_matrix[names(y_train[,y_name]),FILTER_FEATURE_NAMES]
       
       message(paste0("        response has length ",as.character(length(y_train))," !"))
-      x_test <- feature_matrix[folds$test_sets[[i]],]
+      x_test <- feature_matrix[folds$test_sets[[i]],FILTER_FEATURE_NAMES]
       y_test <- phenotype_matrix[ folds$test_sets[[i]] ,j]
       
       set.seed(seed)
@@ -179,6 +184,7 @@ make_fit <- function(
       }
     }
     ##################
+    gene_names_filtered[[i]] <- FILTER_FEATURE_NAMES
   }
   
   message("End method ...")
@@ -187,7 +193,8 @@ make_fit <- function(
   }
 
   return(list(score=score,
-              param = param
+              param = param,
+              gene_names_filtered = gene_names_filtered
               ))
 }######################################################
 
