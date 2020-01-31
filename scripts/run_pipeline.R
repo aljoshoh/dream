@@ -2,43 +2,40 @@
 ### Pipeline on predicting a response matrix based on a feature matrix
 
 
-
-run_pipeline <- function(
+run_pipeline_benchmark <- function(
   ### Runs the pipeline and returns the prediction objects
+  ### HINT: for more documentation, run View(make_fit)
   ######################################################
-  feature_path = NULL, #pa
-  response_path = NULL,
-  submission = T
+  feature_path = NULL, # path to features
+  response_path = NULL, # path to response
+  submission = T,
+  kfold = 10,
+  FUN = function(x){return(x)}, # Function on feature set of training data, must return matrix of features (same names as input)
+  method = "glm",
+  hyperparam = c("alpha"=0.5),
+  cvglm = T
 ){
   if(submission){setwd("storage/groups/cbm01/workspace/dream_aml/")}
   
-  ### Import objects
-  auc <- get_features())
-  rna <- get_features("features/alex_features.RData")
-  return(...)
+  # Import objects
+  auc <- get_features(feature_path)
+  rna <- get_features(response_path)
+  
+  # Cross-Validation initiation
+  CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = kfold, seed = 124)
+  
+  list_glm <- make_fit(feature_matrix = rna, phenotype_matrix = auc, folds = CV,
+                       method = method, 
+                       hyperparam = c("alpha"=0.5),
+                       cvglm = T, FUN = FUN)
+  
+  return(list_glm)
 }######################################################
 
-
-if(submit){
-  ### Set working directory
-  setwd("/storage/groups/cbm01/workspace/dream_aml/")
-  
-
-}
 
 ### Dump dataframes $rna $auc in the features folder/
   #dump_features(rna, "features/alex_features.RData")
   #dump_features(auc, "features/alex_phenotypes.RData")
-
-### Cross-Validation initiation
-CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = 10, seed = 124)
-
-### Run method
-list_glm <- make_fit(feature_matrix = rna, phenotype_matrix = auc[,1:11,drop=F], folds = CV,
-                 method = "glm", 
-                 hyperparam = c("alpha"=0.5),
-                 cvglm = T, FUN = AnvSigGen)
-
 
 
 # Cross-Validation plot
