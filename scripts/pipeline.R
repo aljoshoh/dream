@@ -1,6 +1,18 @@
 ### Small scratch on how to use the source codes in R/
 ### Pipeline on predicting a response matrix based on a feature matrix
-submit <- F
+
+
+
+run_pipeline <- function(
+  ### Runs the pipeline and returns the prediction objects
+  ######################################################
+  feature_path = NULL,
+  response_path = NULL,
+  submission = T
+){
+  if(submission){setwd("storage/groups/cbm01/workspace/dream_aml/")}
+  return(...)
+}######################################################
 
 
 if(submit){
