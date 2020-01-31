@@ -129,7 +129,7 @@ make_fit <- function(
     ########PHONG METHOD
     message(paste0("Executing feature selection for fold ",as.character(i)))
     test <<- feature_matrix[folds$train_sets[[i]],]
-    FILTER_FEATURE_NAMES <- colnames(FUN(rnaseq=feature_matrix[folds$train_sets[[i]],], auc=phenotype_matrix[folds$train_sets[[i]],]))
+    FILTER_FEATURE_NAMES <- colnames(FUN(feature_matrix[folds$train_sets[[i]],], phenotype_matrix[folds$train_sets[[i]],]))
     ####################                  ^change name in Anv-method
     message(paste0("-> Found ",as.character(length(FILTER_FEATURE_NAMES))," genes !"))
     
@@ -194,10 +194,10 @@ make_fit <- function(
 
   return(list(score=score,
               param = param,
-              gene_names_filtered = gene_names_filtered
+              gene_names_filtered = gene_names_filtered,
+              returnFit = returnFit
               ))
 }######################################################
-
 
 
 
