@@ -6,11 +6,15 @@
 run_pipeline <- function(
   ### Runs the pipeline and returns the prediction objects
   ######################################################
-  feature_path = NULL,
+  feature_path = NULL, #pa
   response_path = NULL,
   submission = T
 ){
   if(submission){setwd("storage/groups/cbm01/workspace/dream_aml/")}
+  
+  ### Import objects
+  auc <- get_features())
+  rna <- get_features("features/alex_features.RData")
   return(...)
 }######################################################
 
@@ -19,9 +23,7 @@ if(submit){
   ### Set working directory
   setwd("/storage/groups/cbm01/workspace/dream_aml/")
   
-  ### Import objects
-  auc <- get_features("features/alex_phenotypes.RData")
-  rna <- get_features("features/alex_features.RData")
+
 }
 
 ### Dump dataframes $rna $auc in the features folder/
