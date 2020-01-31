@@ -21,13 +21,13 @@ AnvSigGen = function(rnaseq, auc){
     if (length(auc_d) < 50){
       next
     }
-    auc_d = order(auc_d, decreasing = T)
+    auc_d = auc_d[order(auc_d, decreasing = T)]
     top_d = head(auc_d, n=20)  
     bot_d = tail(auc_d, n=20) 
     p_val_vec = vector(mode = "numeric")
     
     for (g in colnames(rnaseq)) {
-      rnaseq_g = rnaseq[g,] %>% as.numeric()
+      rnaseq_g = rnaseq[, g] 
       names(rnaseq_g) = rownames(rnaseq)
       tmp_df = data.frame(expr = c(rnaseq_g[names(top_d)], rnaseq_g[names(bot_d)]),
                           group = rep(c("top", "bot"), each = 20))
@@ -68,5 +68,6 @@ selectGen = function(gen_sig_list) {
   gen_selected = unique(gen_selected)
   return(gen_selected)
 }
+
 
 
