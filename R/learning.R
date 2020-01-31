@@ -108,7 +108,8 @@ make_fit <- function(
   hyperparam = c("alpha"=0.5), # Hyperparamter for methods
   method = "glm", # Method
   cvglm = F, # If glm should be cross-validated for the lambda parameter, e.g. for benchmarking
-  seed = 123 # Seed for RF method
+  seed = 123, # Seed for RF method
+  returnFit = T # Logical if $param should be returned for all folds at fit, otherwise it returns lambda.min
 ){
   if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}
   if(!is.matrix(phenotype_matrix)){stop("The feature matrix is not a numerical matrix !")}
@@ -165,7 +166,11 @@ make_fit <- function(
       cor <- cor(model$pred, y_test, use = "complete.obs")
       
       score[i,j] <- cor
-      param[[i,j]] <- list(model$fit) #<- here we can either asses feature weights, or store other things from model$
+      if(returnFit == T){
+        param[[i,j]] <- list(model$fit)
+      }else{
+        param[i,j] <- model$fit$lambda.min
+      }
     }
   }
   
