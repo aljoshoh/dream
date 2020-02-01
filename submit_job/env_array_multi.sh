@@ -4,7 +4,7 @@
 #SBATCH --mem-per-cpu=10G
 #SBATCH -p icb_cpu
 #SBATCH -t 48:00:00
-#SBATCH --cpus-per-task 4
+#SBATCH --cpus-per-task 2
 
 BASEDIR=$1
 TOTALTASKS=$2

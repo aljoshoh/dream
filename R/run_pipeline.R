@@ -1,5 +1,4 @@
-### Small scratch on how to use the source codes in R/
-### Pipeline on predicting a response matrix based on a feature matrix
+### Pipeline functions on predicting a response matrix based on a feature matrix
 
 
 run_pipeline_benchmark <- function(
@@ -20,8 +19,8 @@ run_pipeline_benchmark <- function(
   if(submission){setwd("storage/groups/cbm01/workspace/dream_aml/")}
   
   # Import objects
-  auc <- get_features(feature_path)
-  rna <- get_features(response_path)
+  rna <- get_features(feature_path)
+  auc <- get_features(response_path)
   
   # Cross-Validation initiation
   CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = kfold, seed = cvseed)
@@ -82,55 +81,34 @@ run_pipeline_final <- function(
   feature_path = NULL, # path to features
   response_path = NULL, # path to response
   submission = T,
-  kfold = 10,
   FUN = function(x){return(x)}, # Function on feature set of training data, must return matrix of features (same names as input)
   method = "glm",
-  hyperparam = c("alpha"=0.5),
-  cvglm = T,
-  returnFit = F, # if false, then it only returns the lambda
-  cvseed = 123
+  hyperparam = c("alpha"=0.5)
 ){
   if(submission){setwd("storage/groups/cbm01/workspace/dream_aml/")}
   
   # Import objects
-  auc <- get_features(feature_path)
-  rna <- get_features(response_path)
+  rna <- get_features(feature_path)
+  auc <- get_features(response_path)
   
-  # Cross-Validation initiation
-  CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = kfold, seed = cvseed)
+  ### Train whole model
+  list_glm_whole <- make_fit_whole(feature_matrix = rna,
+                                   phenotype_matrix = auc,
+                                   method = method,
+                                   hyperparam = hyperparam)
+
+  fit <- list()
+  for(drug in 1:ncol(auc)){
+    fit[[drug]] <- list_glm_whole$param[,drug][[1]][[1]]
+  }
+    #Potentially return the betas here
+    #beta <- coef(fit[[drug]], s = lambda_min[[drug]])
+    #beta <- beta[as.logical(beta!=0),, drop=F]
+    #plot(fit, xvar = "lambda"); abline(v=log(lambda_min[[drug]]), col="darkred")
   
-  list_glm <- make_fit(feature_matrix = rna, phenotype_matrix = auc, folds = CV,
-                       method = method, 
-                       hyperparam = c("alpha"=0.5),
-                       cvglm = T, FUN = FUN, returnFit = returnFit)
   
   return(list_glm)
 }######################################################
-
-
-
-
-######################################################################################################### TODO
-MAKETHIS <- function(){
-  
-  
-  ### Train whole model 
-  list_glm_whole <- make_fit_whole(feature_matrix = GEXred,
-                                   phenotype_matrix = map[,1:5, drop=F],
-                                   method = "glm",
-                                   hyperparam = c("alpha"=0.3))
-  
-  fit <- list_glm_whole$param[,drug][[1]][[1]]
-  beta <- coef(fit, s = lambda_min[[drug]])
-  beta <- beta[as.logical(beta!=0),, drop=F]
-  plot(fit, xvar = "lambda"); abline(v=log(lambda_min[[drug]]), col="darkred")
-  
-  
-}
-
-
-
-
 
 
 

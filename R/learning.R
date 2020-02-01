@@ -130,7 +130,7 @@ make_fit <- function(
     message(paste0("Executing feature selection for fold ",as.character(i)))
     test <<- feature_matrix[folds$train_sets[[i]],]
     FILTER_FEATURE_NAMES <- colnames(FUN(feature_matrix[folds$train_sets[[i]],], phenotype_matrix[folds$train_sets[[i]],]))
-    ####################                  ^change name in Anv-method
+    ####################
     message(paste0("-> Found ",as.character(length(FILTER_FEATURE_NAMES))," genes !"))
     
     
@@ -143,7 +143,6 @@ make_fit <- function(
       y_train <- (phenotype_matrix[folds$train_sets[[i]],j, drop=F])[!is.na(phenotype_matrix[folds$train_sets[[i]],j]),,drop = F]
       x_train <- feature_matrix[names(y_train[,y_name]),FILTER_FEATURE_NAMES]
       
-      message(paste0("        response has length ",as.character(length(y_train))," !"))
       x_test <- feature_matrix[folds$test_sets[[i]],FILTER_FEATURE_NAMES]
       y_test <- phenotype_matrix[ folds$test_sets[[i]] ,j]
       
@@ -228,14 +227,14 @@ make_fit_whole <- function(
   param <- as.data.frame(matrix(NA,nrow = 1, ncol = ncol(phenotype_matrix)))
   for(j in 1:ncol(phenotype_matrix)){
     message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
-    for(i in 1:1){
+    for(i in 1:1){ # there is only one fold....
       
-      message(paste0("...for fold ",as.character(i)))
+      #message(paste0("...for fold ",as.character(i)))
       y_name <- as.character(colnames(phenotype_matrix)[j])
       y_train <- (phenotype_matrix[intersect,j, drop=F])[!is.na(phenotype_matrix[intersect,j]),,drop = F]
       x_train <- feature_matrix[names(y_train[,y_name]),]
       
-      message(paste0("        response has length ",as.character(length(y_train))," !"))
+      message(paste0("        Progress ",as.character(round(j/ncol(phenotype_matrix)*100)),"% !"))
       x_test <- NULL #feature_matrix[intersect,]
       y_test <- NULL #phenotype_matrix[ intersect ,j]
       
