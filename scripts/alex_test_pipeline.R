@@ -12,16 +12,16 @@ source("R/select_gene_sc1.R")
 models_list <- run_pipeline_benchmark(
   feature_path = "features/alex_features.RData", # path to features
   response_path = "features/alex_phenotypes.RData", # path to response
-  submission = T,
-  kfold = 10,
-  FUN = function(x){return(x)}, # also possible: AnvSigGen 
-                                # @phong: the method "make_fit" does not yet return the results of the filtering
+  submission = F,
+  kfold = 10, 
   method = "glm",
   hyperparam = c("alpha"=0.5),
   cvglm = T,
   returnFit = F, # if false, then it only returns the lambda
   cvseed = args # supply the parallel processing counter
 )
+# also possible to add FUN=AnvSigGen 
+# @phong: the method "make_fit" does not yet return the results of the filtering
 
 save(models_list, file = paste0("metadata/alex/glm_test_instance",as.character(i),".RData"))
 
