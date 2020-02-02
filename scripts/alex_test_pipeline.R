@@ -8,6 +8,7 @@ print(paste0("Running with argument: ",as.character(args)))
 source("R/learning.R")
 source("R/run_pipeline.R")
 source("R/select_gene_sc1.R")
+source("R/algorithms.R")
 
 models_list <- run_pipeline_benchmark(
   feature_path = "features/alex_features.RData", # path to features
