@@ -9,14 +9,14 @@ run_pipeline_benchmark <- function(
   response_path = NULL, # path to response
   submission = T,
   kfold = 10,
-  FUN = function(x){return(x)}, # Function on feature set of training data, must return matrix of features (same names as input)
+  FUN = function(x,y){return(x)}, # Function on feature set of training data, must return matrix of features (same names as input)
   method = "glm",
   hyperparam = c("alpha"=0.5),
   cvglm = T,
   returnFit = F, # if false, then it only returns the lambda
   cvseed = 123
 ){
-  if(submission){setwd("storage/groups/cbm01/workspace/dream_aml/")}
+  if(submission){setwd("/storage/groups/cbm01/workspace/dream_aml/")}
   
   # Import objects
   rna <- get_features(feature_path)
@@ -85,7 +85,7 @@ run_pipeline_final <- function(
   method = "glm",
   hyperparam = c("alpha"=0.5)
 ){
-  if(submission){setwd("storage/groups/cbm01/workspace/dream_aml/")}
+  if(submission){setwd("/storage/groups/cbm01/workspace/dream_aml/")}
   
   # Import objects
   rna <- get_features(feature_path)

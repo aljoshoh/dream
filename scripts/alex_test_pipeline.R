@@ -1,9 +1,10 @@
 #!/usr/bin/env Rscript
-setwd("storage/groups/cbm01/workspace/dream_aml/")
+setwd("/storage/groups/cbm01/workspace/dream_aml/")
 args <- as.numeric(commandArgs(trailingOnly = TRUE)); args <- args[1]
 print(paste0("Running with argument: ",as.character(args)))
 
 ## Alex' Models
+## note that our docker image is using r3.6.1
 source("R/learning.R")
 source("R/run_pipeline.R")
 source("R/select_gene_sc1.R")

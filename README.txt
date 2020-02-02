@@ -1,3 +1,5 @@
+Scripts in scripts/ can be run via SUBMIT.sh
+
 params/:	json files with model paramters
 features/:	RData files with feature matrices (rows=sample, columns=covariate)
 scripts/:	R-scripts to run
