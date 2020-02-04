@@ -124,6 +124,13 @@ make_fit <- function(
   score <- matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix))
   gene_names_filtered <- list()
   param <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
+  
+  if(method == "cox"){ # Cox needs special treatment, this puts the data-matrix back to a single column
+    survival <- as.data.frame(Surv(phenotype_matrix[,1], phenotype_matrix[,2]))
+    row.names(survival) <- row.names(phenotype_matrix)
+    phenotype_matrix <- survival
+  }
+  
   for(i in 1:length(folds$train_set)){
     
     ########PHONG METHOD
@@ -133,7 +140,6 @@ make_fit <- function(
     ####################
     message(paste0("-> Found ",as.character(length(FILTER_FEATURE_NAMES))," genes !"))
     
-    
     #########BIG FOR LOOP
     for(j in 1:ncol(phenotype_matrix)){
       message(paste0("...for fold ",as.character(i)))
@@ -141,7 +147,12 @@ make_fit <- function(
       
       y_name <- as.character(colnames(phenotype_matrix)[j])
       y_train <- (phenotype_matrix[folds$train_sets[[i]],j, drop=F])[!is.na(phenotype_matrix[folds$train_sets[[i]],j]),,drop = F]
-      x_train <- feature_matrix[names(y_train[,y_name]),FILTER_FEATURE_NAMES]
+      
+      if(method == "cox"){ ### HACK-BUGFIX, cause of removing the NA from the phenotype data in the line above
+        x_train <- feature_matrix[folds$train_sets[[i]],FILTER_FEATURE_NAMES]
+      } else {
+        x_train <- feature_matrix[names(y_train[,y_name]),FILTER_FEATURE_NAMES]
+      }
       
       x_test <- feature_matrix[folds$test_sets[[i]],FILTER_FEATURE_NAMES]
       y_test <- phenotype_matrix[ folds$test_sets[[i]] ,j]
@@ -154,6 +165,14 @@ make_fit <- function(
                          y_name = y_name,
                          cvglm = cvglm
                          )
+      }
+      
+      if(method == "cox"){
+        model <- use_cox(x_train, y_train, x_test, y_test,
+                         hyperparam = hyperparam,
+                         y_name = y_name,
+                         cvglm = cvglm
+        )
       }
       
       if(method == "rf"){
@@ -173,9 +192,16 @@ make_fit <- function(
       }
       ############################
       mse <- mean(model$diff*model$diff)
-      cor <- cor(model$pred, y_test, use = "complete.obs")
+      if(method != "cox"){
+        cor <- cor(model$pred, y_test, use = "complete.obs")
+        score[i,j] <- cor
+      } else {
+        score <- as.data.frame(score)
+        cor <- list(model$pred)
+        score[[i,j]] <- cor
+      }
       
-      score[i,j] <- cor
+      
       if(returnFit == T){
         param[[i,j]] <- list(model$fit)
       }else{
@@ -225,6 +251,13 @@ make_fit_whole <- function(
   message("Starting to fit ",method," ...")
   score <- matrix(NA,nrow = 1, ncol = ncol(phenotype_matrix))
   param <- as.data.frame(matrix(NA,nrow = 1, ncol = ncol(phenotype_matrix)))
+  
+  if(method == "cox"){ # Cox needs special treatment, this puts the data-matrix back to a single column
+    survival <- as.data.frame(Surv(phenotype_matrix[,1], phenotype_matrix[,2]))
+    row.names(survival) <- row.names(phenotype_matrix)
+    phenotype_matrix <- survival
+  }
+  
   for(j in 1:ncol(phenotype_matrix)){
     message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
     for(i in 1:1){ # there is only one fold....
@@ -245,6 +278,14 @@ make_fit_whole <- function(
                             hyperparam = hyperparam,
                             y_name = y_name,
                             cvglm = F
+        )
+      }
+      
+      if(method == "cox"){
+        model <- use_cox(x_train, y_train, x_test, y_test,
+                         hyperparam = hyperparam,
+                         y_name = y_name,
+                         cvglm = F
         )
       }
       
