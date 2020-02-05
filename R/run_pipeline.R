@@ -63,6 +63,8 @@ plot_cv <- function(
 lambda_min <- function(
   ### get minimum lambdas for each drug in the pipeline object
   ### Only works if returnFit=F
+  ### TODO
+  ### Test this function
   ######################################################
   pipeline_object = NULL # the object created from the pipeline object
 ){
@@ -107,7 +109,7 @@ run_pipeline_final <- function(
     #plot(fit, xvar = "lambda"); abline(v=log(lambda_min[[drug]]), col="darkred")
   
   
-  return(list_glm)
+  return(list_glm_whole)
 }######################################################
 
 
