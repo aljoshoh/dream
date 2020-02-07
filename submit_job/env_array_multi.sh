@@ -61,6 +61,7 @@ for i in `seq 1 $tasksperarray`;
 do
 	echo Executing $BASEDIR/$FILE with option $i
 	srun -n 1 ch-run -b /storage/groups/:/storage/groups/ /localscratch/$USER/$dir/$DOCKER/ -- Rscript $BASEDIR/$FILE $i $TASKID &
+	sleep 5
 done
 
 wait
