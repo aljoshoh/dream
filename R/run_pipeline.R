@@ -27,7 +27,7 @@ run_pipeline_benchmark <- function(
   
   list_glm <- make_fit(feature_matrix = rna, phenotype_matrix = auc, folds = CV,
                        method = method, 
-                       hyperparam = c("alpha"=0.5),
+                       hyperparam = hyperparam,
                        cvglm = T, FUN = FUN, returnFit = returnFit)
   
   return(list_glm)

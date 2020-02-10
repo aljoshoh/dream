@@ -89,16 +89,44 @@ use_rf <- function(
   y_test=y_test,
   hyperparam=hyperparam,
   y_name=y_name,
-  seed = 123
+  seed = NULL,
+  kfold = NULL
 ){
-  hyperparams_rf = NULL
-  dff <- cbind(x_train,y_train)
+  # Initialize method
+  customRF <- list(type = "Regression", library = "randomForest", loop = NULL)
+  customRF$parameters <- data.frame(parameter = c("mtry", "ntree"), class = rep("numeric", 2), label = c("mtry", "ntree"))
+  customRF$grid <- function(x, y, len = NULL, search = "grid") {}
+  customRF$fit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
+    randomForest(x, y, mtry = param$mtry, ntree=param$ntree, ...)
+  }
+  customRF$predict <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
+    predict(modelFit, newdata = newdata
+    )
+  customRF$prob <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
+    predict(modelFit, newdata, type = "prob")
+  customRF$sort <- function(x) x[order(x[,1]),]
+  customRF$levels <- function(x) x$classes
+  set.seed(seed)
   
   message("        Fitting...")
-  fit <- h2o.randomForest(x = colnames(x_train), y = y_name, training_frame = as.h2o(dff), seed = seed)
+  
+  if(is.null(kfold)){ # if whole data training
+    control <- trainControl(method="none")
+  }else{
+    control <- trainControl(method="repeatedcv", number=kfold, repeats=1)
+  }
+  tunegrid <- expand.grid(.mtry=hyperparam[[1]], .ntree= hyperparam[[2]]) # here the hyperparams are feeded
+  
+  fit <- train(x = as.data.frame(x_train),
+                  y = as.numeric(y_train),
+                  method=customRF, 
+                  metric="RMSE", 
+                  tuneGrid=tunegrid, 
+                  trControl=control)
+  
   
   message("        Validating...")
-  pred <- predict(fit, as.h2o(x_test))
+  pred <- predict(fit, x_test)
   pred <- as.data.frame(pred)[,1]
   diff <- pred - y_test
   

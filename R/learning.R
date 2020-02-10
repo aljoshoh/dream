@@ -8,6 +8,8 @@ suppressPackageStartupMessages({
   library(glmnet)
   library(glmnetUtils)
   library(rjson)
+  library(randomForest)
+  library(caret)
 })
 
 loadRData <- function(
@@ -116,7 +118,7 @@ make_fit <- function(
   if(length(folds$test_set) != length(folds$train_set)){stop("Folds of testing and training do not match !")}
   
   message("Initialize Method ...")
-  if(method %in% c("rf","dnn")){
+  if(method %in% c("dnn")){
     h2o.init()
   }
   
@@ -131,7 +133,7 @@ make_fit <- function(
     phenotype_matrix <- survival
   }
   
-  for(i in 1:length(folds$train_set)){
+  for(i in 1:length(folds$train_set)){ # for all folds
     
     ########PHONG METHOD
     message(paste0("Executing feature selection for fold ",as.character(i)))
@@ -179,7 +181,8 @@ make_fit <- function(
         model <- use_rf(x_train, y_train, x_test, y_test,
                         hyperparam = hyperparam,
                         y_name = y_name,
-                        seed = seed
+                        seed = seed,
+                        kfold = length(folds$train_set) # how many internal folds
                         )
       }
       
@@ -213,7 +216,7 @@ make_fit <- function(
   }
   
   message("End method ...")
-  if(method %in% c("rf","dnn")){
+  if(method %in% c("dnn")){
     h2o.shutdown(prompt = F)
   }
 
@@ -234,7 +237,7 @@ make_fit_whole <- function(
   ######################################################
   feature_matrix = NULL, # Numerical feature matrix
   phenotype_matrix = NULL, # Numerical pheontype matrix 
-  FUN = function(x){return(x)}, # Pass filtering function for cv sets internally, default is identity function
+  FUN = function(x,y){return(x)}, # Pass filtering function for cv sets internally, default is identity function
   hyperparam = c("alpha"=0.5), # Hyperparamter for methods
   method = "glm", # Method
   seed = 123 # Seed for RF method
@@ -258,6 +261,13 @@ make_fit_whole <- function(
     phenotype_matrix <- survival
   }
   
+  ########PHONG METHOD
+  message(paste0("Executing feature selection for overall ",""))
+  test <- feature_matrix[intersect,]
+  FILTER_FEATURE_NAMES <- colnames(FUN(feature_matrix[intersect,], phenotype_matrix[intersect,]))
+  ####################
+  message(paste0("-> Found ",as.character(length(FILTER_FEATURE_NAMES))," genes !"))
+  
   for(j in 1:ncol(phenotype_matrix)){
     message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
     for(i in 1:1){ # there is only one fold....
@@ -265,7 +275,14 @@ make_fit_whole <- function(
       #message(paste0("...for fold ",as.character(i)))
       y_name <- as.character(colnames(phenotype_matrix)[j])
       y_train <- (phenotype_matrix[intersect,j, drop=F])[!is.na(phenotype_matrix[intersect,j]),,drop = F]
-      x_train <- feature_matrix[names(y_train[,y_name]),]
+      
+      if(method == "cox"){ ### HACK-BUGFIX, cause of removing the NA from the phenotype data in the line above
+        x_train <- feature_matrix[intersect,FILTER_FEATURE_NAMES]
+      } else {
+        x_train <- feature_matrix[names(y_train[,y_name]),FILTER_FEATURE_NAMES]
+      }
+      
+      #x_train <- feature_matrix[names(y_train[,y_name]),]
       
       message(paste0("        Progress ",as.character(round(j/ncol(phenotype_matrix)*100)),"% !"))
       x_test <- NULL #feature_matrix[intersect,]

@@ -11,14 +11,14 @@ source("R/select_gene_sc1.R")
 source("R/algorithms.R")
 
 models_list <- run_pipeline_benchmark(
-  feature_path = "features/alex_features.RData", # path to features
-  response_path = "features/alex_phenotypes.RData", # path to response
+  feature_path = "features/alex_features_red.RData", # path to features
+  response_path = "features/alex_phenotypes_red.RData", # path to response
   submission = F,
   kfold = 10, 
-  method = "glm",
-  hyperparam = c("alpha"=0.5),
+  method = "rf",
+  hyperparam = list(c(333),c(500)), #,c("alpha"=0.5),
   cvglm = T,
-  returnFit = F, # if false, then it only returns the lambda
+  returnFit = T, # if false, then it only returns the lambda
   cvseed = args # supply the parallel processing counter
 )
 # also possible to add FUN=AnvSigGen 
