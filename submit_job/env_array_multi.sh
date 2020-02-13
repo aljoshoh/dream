@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH -J arrayscript
-#SBATCH --mem-per-cpu=10G
+#SBATCH --mem-per-cpu=30G
 #SBATCH -p icb_cpu
 #SBATCH -t 48:00:00
 #SBATCH --cpus-per-task 2
