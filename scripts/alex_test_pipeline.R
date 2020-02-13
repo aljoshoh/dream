@@ -15,16 +15,16 @@ models_list <- run_pipeline_benchmark(
   response_path = "features/alex_phenotypes_red.RData", # path to response
   submission = F,
   kfold = 10, 
-  method = "rf",
-  hyperparam = list(c(333),c(500)), #,c("alpha"=0.5),
+  method = c("glm"),
+  hyperparam = c("alpha"=0.5), #list(c(333),c(500)), # c("alpha"=0.5),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
-  cvseed = args # supply the parallel processing counter
+  cvseed = 1 #args # supply the parallel processing counter
 )
 # also possible to add FUN=AnvSigGen 
 # @phong: the method "make_fit" does not yet return the results of the filtering
 
-save(models_list, file = paste0("metadata/alex/glm_test_instance",as.character(i),".RData"))
+save(models_list, file = paste0("metadata/alex/","glm","_test_instance",as.character(1),".RData"))
 
 
 

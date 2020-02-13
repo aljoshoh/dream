@@ -14,7 +14,9 @@ run_pipeline_benchmark <- function(
   hyperparam = c("alpha"=0.5),
   cvglm = T,
   returnFit = F, # if false, then it only returns the lambda
-  cvseed = 123
+  cvseed = 123,
+  CVBuilt = NULL,
+  stack = F  # <---------------------------------------------------------------------------------------------------------------- needs to be implemented consistently
 ){
   if(submission){setwd("/storage/groups/cbm01/workspace/dream_aml/")}
   
@@ -22,13 +24,22 @@ run_pipeline_benchmark <- function(
   rna <- get_features(feature_path)
   auc <- get_features(response_path)
   
+  if(stack){
+    rna <- get_features(feature_path, matrixfy = F)
+  }
+  
   # Cross-Validation initiation
-  CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = kfold, seed = cvseed)
+  if(!is.null(CVBuilt)){
+    message("Using CV-Built !")
+    CV <- CVBuilt
+  } else {
+    CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = kfold, seed = cvseed)
+  }
   
   list_glm <- make_fit(feature_matrix = rna, phenotype_matrix = auc, folds = CV,
                        method = method, 
                        hyperparam = hyperparam,
-                       cvglm = T, FUN = FUN, returnFit = returnFit)
+                       cvglm = T, FUN = FUN, returnFit = returnFit, stack = stack)
   
   return(list_glm)
 }######################################################

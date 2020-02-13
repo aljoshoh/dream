@@ -38,11 +38,16 @@ get_params <- function(
 get_features <- function(
   ### Loads features
   ######################################################
-  path = NULL # RData file of feature matrix, e.g. "features/features.RData"
+  path = NULL, # RData file of feature matrix, e.g. "features/features.RData"
+  matrixfy = T
 ){
   path <- as.character(path)
   message(paste0('Loading ', path))
-  features <- as.matrix(loadRData(path))
+  if(matrixfy){
+    features <- as.matrix(loadRData(path))
+  } else {
+    features <- loadRData(path)
+  }
   
   return(features)
 }######################################################
@@ -111,11 +116,16 @@ make_fit <- function(
   method = "glm", # Method
   cvglm = F, # If glm should be cross-validated for the lambda parameter, e.g. for benchmarking
   seed = 123, # Seed for RF method
-  returnFit = T # Logical if $param should be returned for all folds at fit, otherwise it returns lambda.min
+  returnFit = T, # Logical if $param should be returned for all folds at fit, otherwise it returns lambda.min
+  stack = NULL # for generally having a unique dataframe for each drug
 ){
-  if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}
-  if(!is.matrix(phenotype_matrix)){stop("The feature matrix is not a numerical matrix !")}
-  if(length(folds$test_set) != length(folds$train_set)){stop("Folds of testing and training do not match !")}
+  if(!stack){
+    if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}
+    if(!is.matrix(phenotype_matrix)){stop("The feature matrix is not a numerical matrix !")}
+    if(length(folds$test_set) != length(folds$train_set)){stop("Folds of testing and training do not match !")}
+  } else {
+    if(!is.list(feature_matrix)){stop("The feature matrix is not a list for model stacking !")}
+  }
   
   message("Initialize Method ...")
   if(method %in% c("dnn")){
@@ -133,17 +143,26 @@ make_fit <- function(
     phenotype_matrix <- survival
   }
   
+  feature_matrix_prestack <- feature_matrix
+  
   for(i in 1:length(folds$train_set)){ # for all folds
     
     ########PHONG METHOD
-    message(paste0("Executing feature selection for fold ",as.character(i)))
-    test <<- feature_matrix[folds$train_sets[[i]],]
-    FILTER_FEATURE_NAMES <- colnames(FUN(feature_matrix[folds$train_sets[[i]],], phenotype_matrix[folds$train_sets[[i]],]))
-    ####################
-    message(paste0("-> Found ",as.character(length(FILTER_FEATURE_NAMES))," genes !"))
+    if(!stack){
+      message(paste0("Executing feature selection for fold ",as.character(i)))
+      test <<- feature_matrix[folds$train_sets[[i]],]
+      FILTER_FEATURE_NAMES <- colnames(FUN(feature_matrix[folds$train_sets[[i]],], phenotype_matrix[folds$train_sets[[i]],]))
+      ####################
+      message(paste0("-> Found ",as.character(length(FILTER_FEATURE_NAMES))," genes !"))
+    }
     
     #########BIG FOR LOOP
     for(j in 1:ncol(phenotype_matrix)){
+      
+      if(stack){ #if model stacking, get the feature matrix for each drug seperately
+        feature_matrix <- feature_matrix_prestack[[j]]
+        FILTER_FEATURE_NAMES <- colnames(feature_matrix)
+      }
       message(paste0("...for fold ",as.character(i)))
       message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
       
@@ -223,6 +242,7 @@ make_fit <- function(
   return(list(score=score,
               param = param,
               gene_names_filtered = gene_names_filtered,
+              cv = folds,
               returnFit = returnFit
               ))
 }######################################################

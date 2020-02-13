@@ -1,5 +1,7 @@
 ## Random forest model stacking
 
+
+## 
 library(randomForest)
 library(caret)
 source("R/learning.R")
@@ -18,48 +20,48 @@ auc <- auc[,1:2]
 
 dump_features(auc, path = "features/alex_phenotypes_red.RData")
 dump_features(rna, path = "features/alex_features_red.RData")
-
-test <- randomForest(x = rna[!is.na(auc[,1]),], 
-                     y = (auc[,1])[!is.na(auc[,1])],
-                     
-                     )
-
-plot(predict(test, newdata = rna[!is.na(auc[,1]),]), (auc[,1])[!is.na(auc[,1])])
+dump_features(models_list, path = "features/alex_rf_models.RData")
 
 
+modelsa <- get_features("features/alex_glm_models.RData", matrixfy = F)
+modelsb <- get_features("features/alex_rf_models.RData", matrixfy = F)
 
 
-seed <- 7
-customRF <- list(type = "Regression", library = "randomForest", loop = NULL)
-customRF$parameters <- data.frame(parameter = c("mtry", "ntree"), class = rep("numeric", 2), label = c("mtry", "ntree"))
-customRF$grid <- function(x, y, len = NULL, search = "grid") {}
-customRF$fit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
-  randomForest(x, y, mtry = param$mtry, ntree=param$ntree, ...)
-}
-customRF$predict <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
-  predict(modelFit, newdata = newdata
-            )
-customRF$prob <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
-  predict(modelFit, newdata, type = "prob")
-customRF$sort <- function(x) x[order(x[,1]),]
-customRF$levels <- function(x) x$classes
+### $cv of the two benchmarking objects must match
 
+preds_stack <- lapply(1:ncol(auc), function(y){
+model1 <- unlist(lapply(1:length(modelsb$cv$test_sets), function(x) predict(modelsb$param[[x,y]][[1]], newdata = rna[modelsb$cv$test_sets[[x]],])));
+model2 <- unlist(lapply(1:length(modelsa$cv$test_sets), function(x) predict(modelsa$param[[x,y]][[1]], newx = rna[modelsa$cv$test_sets[[x]],], s = 'lambda.min')[,1]));
+temp <- cbind(model1, model2);
+return(temp)
+})
 
+stack_features <- preds_stack
+dump_features(stack_features, path = "features/alex_stacked_models_test.RData")
 
-# train model
-control <- trainControl(method="repeatedcv", number=10, repeats=1)
-tunegrid <- expand.grid(.mtry=c(15,200), .ntree= 2000) # c(1000, 1500, 2000, 2500) 1:15
-
-custom <- train(x = rna[!is.na(auc[,1]),],
-                y = (auc[,1])[!is.na(auc[,1])],
-                method=customRF, 
-                metric="RMSE", 
-                tuneGrid=tunegrid, 
-                trControl=control)
-summary(custom)
-plot(custom)
+models_list_stacked <- run_pipeline_benchmark(
+  feature_path = "features/alex_stacked_models_test.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
+  response_path = "features/alex_phenotypes_red.RData", # path to response
+  submission = F,
+  kfold = NULL, 
+  method = "glm",
+  hyperparam = c("alpha"=0.5), #list(c(333),c(500)), # c("alpha"=0.5),
+  cvglm = T,
+  returnFit = T, # if false, then it only returns the lambda
+  cvseed = NULL, # supply the parallel processing counter
+  CVBuilt = modelsa$cv,
+  stack = T
+)
+models_list_stacked$score
 
 
 
 
-plot(custom)
+
+
+
+
+
+
+
+

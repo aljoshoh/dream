@@ -6,7 +6,9 @@ dream_aml.Rproj
 .idea/
 features/*
 outputs/*
+metadata/*
 
+!metadata/.gitkeep
 !features/alex_phenotypes.RData
 !features/alex_features.RData
 !chembl/.gitkeep

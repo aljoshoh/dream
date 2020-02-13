@@ -115,7 +115,12 @@ use_rf <- function(
   }else{
     control <- trainControl(method="repeatedcv", number=kfold, repeats=1)
   }
-  tunegrid <- expand.grid(.mtry=hyperparam[[1]], .ntree= hyperparam[[2]]) # here the hyperparams are feeded
+  
+  if(is.null(hyperparam[[1]]) & is.null(hyperparam[[2]])){
+    tunegrid <- expand.grid(.mtry=round(ncol(x_train)/3), .ntree= 500) # here the hyperparams are feeded
+  }else{
+    tunegrid <- expand.grid(.mtry=hyperparam[[1]], .ntree= hyperparam[[2]]) # here the hyperparams are feeded
+  }
   
   fit <- train(x = as.data.frame(x_train),
                   y = as.numeric(y_train),
