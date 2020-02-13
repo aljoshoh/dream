@@ -10,9 +10,17 @@ source("R/run_pipeline.R")
 source("R/select_gene_sc1.R")
 source("R/algorithms.R")
 
+
+feature_path = "features/alex_features.RData" # path to features
+response_path = "features/alex_phenotypes.RData" # path to response
+rna <- get_features(feature_path)
+auc <- get_features(response_path)
+dump_features(auc, path = "features/alex_phenotypes.RData")
+dump_features(rna, path = "features/alex_features.RData")
+
 models_list <- run_pipeline_benchmark(
-  feature_path = "features/alex_features_red.RData", # path to features
-  response_path = "features/alex_phenotypes_red.RData", # path to response
+  feature_path = "features/alex_features.RData", # path to features
+  response_path = "features/alex_phenotypes.RData", # path to response
   submission = F,
   kfold = 10, 
   method = c("glm"),
