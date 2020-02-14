@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 setwd("/storage/groups/cbm01/workspace/dream_aml/")
-args <- as.numeric(commandArgs(trailingOnly = TRUE)); args <- args[1]
+args <- as.numeric(commandArgs(trailingOnly = TRUE)); args <- args[1] # get the submission script argument
 print(paste0("Running with argument: ",as.character(args)))
 
 ## Alex' Models
@@ -9,22 +9,26 @@ source("R/learning.R")
 source("R/run_pipeline.R")
 source("R/select_gene_sc1.R")
 source("R/algorithms.R")
+numberofargs <- 20 # if sequential, set to 1
 
 
 feature_path = "features/alex_features.RData" # path to features
 response_path = "features/alex_phenotypes.RData" # path to response
 rna <- get_features(feature_path)
 auc <- get_features(response_path)
-dump_features(auc, path = "features/alex_phenotypes.RData")
 dump_features(rna, path = "features/alex_features.RData")
+
+
+auc <- cut_df(auc, numberofargs,args)	
+dump_features(auc, path = paste0("features/alex_phenotypes_",as.character(args),".RData"))
 
 models_list <- run_pipeline_benchmark(
   feature_path = "features/alex_features.RData", # path to features
-  response_path = "features/alex_phenotypes.RData", # path to response
+  response_path = paste0("features/alex_phenotypes_",as.character(args),".RData"), # path to response
   submission = F,
   kfold = 10, 
-  method = c("glm"),
-  hyperparam = c("alpha"=0.5), #list(c(333),c(500)), # c("alpha"=0.5),
+  method = c("rf"),
+  hyperparam = list(c(NULL,NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1 #args # supply the parallel processing counter
@@ -32,7 +36,7 @@ models_list <- run_pipeline_benchmark(
 # also possible to add FUN=AnvSigGen 
 # @phong: the method "make_fit" does not yet return the results of the filtering
 
-save(models_list, file = paste0("metadata/alex/","glm","_test_instance",as.character(1),".RData"))
+save(models_list, file = paste0("metadata/alex/","rf","_test_instance",as.character(1),".RData"))
 
 
 
