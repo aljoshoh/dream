@@ -185,7 +185,7 @@ make_fit <- function(
       }
       
       if(method == "dnn"){
-        model <- use_rf(x_train, y_train, x_test, y_test,
+        model <- use_dnn(x_train, y_train, x_test, y_test,
                         hyperparam = hyperparam,
                         y_name = as.character(colnames(phenotype_matrix)[j]),
                         seed = seed
