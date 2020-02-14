@@ -9,6 +9,7 @@ suppressPackageStartupMessages({
   library(glmnetUtils)
   library(rjson)
   library(randomForest)
+  library(caret)
 })
 # library(caret) not yet in image !!!
 
