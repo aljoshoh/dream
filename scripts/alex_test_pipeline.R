@@ -36,7 +36,7 @@ models_list <- run_pipeline_benchmark(
 # also possible to add FUN=AnvSigGen 
 # @phong: the method "make_fit" does not yet return the results of the filtering
 
-save(models_list, file = paste0("metadata/alex/","rf","_test_instance",as.character(1),".RData"))
+save(models_list, file = paste0("metadata/alex/","rf","_test_instance",as.character(args),".RData"))
 
 
 
