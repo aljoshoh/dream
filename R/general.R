@@ -9,3 +9,26 @@ cut_df <- function(
   df <- df[,tmp == index]
   return(df)
 }######################################################
+
+
+loadRData <- function(
+  ### Loads an RData file, and returns it
+  ######################################################
+  fileName
+){
+  load(fileName)
+  get(ls()[ls() != "fileName"])
+}######################################################
+
+
+get_params <- function(
+  ### Loads hyperparameters
+  ######################################################
+  json.file = NULL # json file of paramters, e.g. "params/params.json"
+){
+  json.file <- as.character(json.file)
+  message(paste0('Loading ', json.file))
+  params <- fromJSON(json.file)
+  
+  return(params)
+}######################################################
