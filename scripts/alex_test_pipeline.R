@@ -21,7 +21,6 @@ dump_features(rna, path = "features/alex_features.RData")
 
 
 auc <- cut_df(auc, numberofargs,args)	
-auc <- auc[,1:2]
 dump_features(auc, path = paste0("features/alex_phenotypes_",as.character(args),".RData"))
 
 models_list <- run_pipeline_benchmark(
@@ -29,8 +28,8 @@ models_list <- run_pipeline_benchmark(
   response_path = paste0("features/alex_phenotypes_",as.character(args),".RData"), # path to response
   submission = F,
   kfold = 10, 
-  method = c("dnn"),
-  hyperparam = NULL, #list(c(NULL,NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
+  method = c("rf"),
+  hyperparam = list(c(NULL,NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1 #args # supply the parallel processing counter
