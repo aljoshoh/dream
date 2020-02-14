@@ -194,7 +194,7 @@ make_fit <- function(
       ############################
       mse <- mean(model$diff*model$diff)
       if(method != "cox"){
-        cor <- cor(model$pred, y_test, use = "complete.obs")
+        cor <- cor(model$pred, y_test, use = "complete.obs", method = "spearman")
         score[i,j] <- cor
       } else {
         score <- as.data.frame(score)
