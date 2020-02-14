@@ -9,6 +9,7 @@ source("R/learning.R")
 source("R/run_pipeline.R")
 source("R/select_gene_sc1.R")
 source("R/algorithms.R")
+source("R/general.R")
 numberofargs <- 20 # if sequential, set to 1
 
 
