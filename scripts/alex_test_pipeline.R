@@ -29,7 +29,7 @@ models_list <- run_pipeline_benchmark(
   submission = F,
   kfold = 10, 
   method = c("rf"),
-  hyperparam = list(c(NULL,NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
+  hyperparam = list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1 #args # supply the parallel processing counter
