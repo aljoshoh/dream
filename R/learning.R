@@ -9,8 +9,8 @@ suppressPackageStartupMessages({
   library(glmnetUtils)
   library(rjson)
   library(randomForest)
-  library(caret)
 })
+# library(caret) not yet in image !!!
 
 loadRData <- function(
   ### Loads an RData file, and returns it
