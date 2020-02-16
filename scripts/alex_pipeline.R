@@ -20,20 +20,23 @@ print(paste0("Running with argument: ",as.character(args)))
 numberofargs <- 8*5 # if sequential, set to 1
 ###############
 
-feature_path = "features/mut/mut_features.RData" # path to features
-response_path = "features/mut/mut_response.RData" # path to response
+directory <- "rna"
+descriptor < "rna"
+
+feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # path to features
+response_path = paste0("features/",directory,"/",descriptor,"_response.RData") # path to response
 rna <- get_features(feature_path)
 auc <- get_features(response_path)
-dump_features(rna, path = "features/mut/mut_features.RData")
-dump_features(auc, path = "features/mut/mut_response.RData")
+dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features.RData"))
+dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
 
 
 auc <- cut_df(auc, numberofargs,args)	
-dump_features(auc, path = paste0("features/mut/mut_response_",as.character(args),".RData"))
+dump_features(auc, path = paste0("features",directory,"/",descriptor,"_response_",as.character(args),".RData"))
 
 models_list <- run_pipeline_benchmark(
-  feature_path = "features/mut/mut_features.RData", # path to features
-  response_path = paste0("features/mut/mut_response_",as.character(args),".RData"), # path to response
+  feature_path = paste0("features/",directory,"/",descriptor,"_features.RData"), # path to features
+  response_path = paste0("features",directory,"/",descriptor,"_response_",as.character(args),".RData"), # path to response
   submission = T,
   kfold = 10, 
   method = c("dnn"),
