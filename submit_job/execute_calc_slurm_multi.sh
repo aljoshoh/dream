@@ -11,7 +11,7 @@
 FILE=$3
 tasksperarray=$6
 BASEDIR=/storage/groups/cbm01/$4
-BASEDIRarrayscript=/storage/groups/cbm01/tools/submit_job
+BASEDIRarrayscript=/storage/groups/cbm01/workspace/dream_aml/submit_job
 
 
 # Check status of command

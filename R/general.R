@@ -32,3 +32,20 @@ get_params <- function(
   
   return(params)
 }######################################################
+
+
+combine_results <- function(
+  ### Loads results and saves the full df
+  ######################################################
+  name = NULL # path until the instance variable
+){
+  
+  
+}
+  
+  
+  
+  
+  
+  
+  

@@ -1,7 +1,8 @@
 #!/usr/bin/env Rscript
 setwd("/storage/groups/cbm01/workspace/dream_aml/")
-args <- as.numeric(commandArgs(trailingOnly = TRUE)); args <- args[1] # get the submission script argument
-print(paste0("Running with argument: ",as.character(args)))
+args <- as.numeric(commandArgs(trailingOnly = TRUE)); args <- args # get the submission script argument
+print("Arguments:")
+print(args)
 
 ## Alex' Models
 ## note that our docker image is using r3.6.1
@@ -10,8 +11,14 @@ source("R/run_pipeline.R")
 source("R/select_gene_sc1.R")
 source("R/algorithms.R")
 source("R/general.R")
-numberofargs <- 50 # if sequential, set to 1
 
+#### SUBMISSION
+# ./SUBMIT.sh alex_pipeline.R 8 5
+###############
+args <- (args[2]-1)*8+args[1] #8=number of jobs per array
+print(paste0("Running with argument: ",as.character(args)))
+numberofargs <- 8*5 # if sequential, set to 1
+###############
 
 feature_path = "features/mut/mut_features.RData" # path to features
 response_path = "features/mut/mut_response.RData" # path to response
@@ -29,8 +36,8 @@ models_list <- run_pipeline_benchmark(
   response_path = paste0("features/mut/mut_response_",as.character(args),".RData"), # path to response
   submission = T,
   kfold = 10, 
-  method = c("glm"),
-  hyperparam = c("alpha"=0.5),#list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
+  method = c("dnn"),
+  hyperparam = NULL, #list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1 #args # supply the parallel processing counter
@@ -38,7 +45,7 @@ models_list <- run_pipeline_benchmark(
 # also possible to add FUN=AnvSigGen 
 # @phong: the method "make_fit" does not yet return the results of the filtering
 
-save(models_list, file = paste0("metadata/alex/","glm","_10fold_instance",as.character(args),".RData"))
+save(models_list, file = paste0("outputs/mut/","dnn_","default._10fold_cvseed1_instance",as.character(args),".RData"))
 
 
 

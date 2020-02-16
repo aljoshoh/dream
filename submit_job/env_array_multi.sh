@@ -1,10 +1,11 @@
 #!/bin/bash
 
 #SBATCH -J arrayscript
-#SBATCH --mem-per-cpu=30G
+#SBATCH --mem-per-cpu=5G
 #SBATCH -p icb_cpu
 #SBATCH -t 48:00:00
-#SBATCH --cpus-per-task 2
+#SBATCH --cpus-per-task 1
+#SBATCH -N 1
 
 BASEDIR=$1
 TOTALTASKS=$2
@@ -25,7 +26,7 @@ create_dir () {
 		directory=$(($directory+1))
 		directory=$(create_dir $directory $root)
 	fi
-	mkdir /localscratch/$USER/$directory
+	mkdir -p /localscratch/$USER/$directory
 	echo $directory
 }
 
@@ -33,12 +34,9 @@ dir=$(create_dir $TASKID /localscratch/$USER)
 cd /localscratch/$USER/$dir
 
 echo Created directory for local environment: $dir
-#if [ ! -d "/localscratch/alexander.ohnmacht/$dir/$DOCKER/" ]; then 
 ch-tar2dir /storage/groups/cbm01/tools/alexander.ohnmacht/r-studio-charliecloud-master-b76b94e8c5040cd58fb0ffd1a463fd7409bb886e/exports/$DOCKER.tar.gz /localscratch/$USER/$dir
 echo Set up the docker image !
-#fi 
-# change to correct directory
-#cd $BASEDIR
+
 
 # some initial info
 echo It is now:
@@ -66,7 +64,7 @@ done
 
 wait
 echo delete charlieclould image
-rm -rf /localscratch/$USER/$dir/$DOCKER/
+srun rm -rf /localscratch/$USER/$dir/$DOCKER/
 
 # i am done
 echo The job has ended.
