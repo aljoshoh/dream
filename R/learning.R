@@ -208,7 +208,7 @@ make_fit <- function(
       }else{
         param[i,j] <- model$fit$lambda.min
       }
-      gene_names_filtered[[i,j]] <- FILTER_FEATURE_NAMES[[j]]
+      gene_names_filtered[[i,j]] <- list(FILTER_FEATURE_NAMES[[j]])
     }
     ##################
   }

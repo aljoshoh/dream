@@ -39,7 +39,7 @@ models_list <- run_pipeline_benchmark(
   response_path = paste0("features/",directory,"/",descriptor,"_response_",as.character(args),".RData"), # path to response
   submission = T,
   kfold = 10, 
-  method = c("dnn"),
+  method = c("rf"),
   hyperparam = list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
@@ -48,7 +48,7 @@ models_list <- run_pipeline_benchmark(
 # also possible to add FUN=AnvSigGen 
 # @phong: the method "make_fit" does not yet return the results of the filtering
 
-save(models_list, file = paste0("outputs/",directory,"/","dnn_","default._10fold_cvseed1_instance",as.character(args),".RData"))
+save(models_list, file = paste0("outputs/",directory,"/","dnn_","default._10fold_cvseed1_instance",as.character(args),"_test.RData"))
 
 
 
