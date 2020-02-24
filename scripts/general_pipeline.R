@@ -43,7 +43,8 @@ models_list <- run_pipeline_benchmark(
   hyperparam = list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
-  cvseed = 1 #args # supply the parallel processing counter
+  cvseed = 1,
+  args = args
 )
 # also possible to add FUN=AnvSigGen 
 # @phong: the method "make_fit" does not yet return the results of the filtering

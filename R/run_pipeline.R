@@ -16,7 +16,8 @@ run_pipeline_benchmark <- function(
   returnFit = F, # if false, then it only returns the lambda
   cvseed = 123,
   CVBuilt = NULL,
-  stack = F  # <---------------------------------------------------------------------------------------------------------------- needs to be implemented consistently
+  stack = F,
+  args = NULL# <---------------------------------------------------------------------------------------------------------------- needs to be implemented consistently
 ){
   if(submission){setwd("/storage/groups/cbm01/workspace/dream_aml/")}
   
@@ -39,7 +40,7 @@ run_pipeline_benchmark <- function(
   list_glm <- make_fit(feature_matrix = rna, phenotype_matrix = auc, folds = CV,
                        method = method, 
                        hyperparam = hyperparam,
-                       cvglm = T, FUN = FUN, returnFit = returnFit, stack = stack)
+                       cvglm = T, FUN = FUN, returnFit = returnFit, stack = stack, args = args)
   
   return(list_glm)
 }######################################################

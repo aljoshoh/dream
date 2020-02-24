@@ -96,7 +96,8 @@ make_fit <- function(
   cvglm = F, # If glm should be cross-validated for the lambda parameter, e.g. for benchmarking
   seed = 123, # Seed for RF method
   returnFit = T, # Logical if $param should be returned for all folds at fit, otherwise it returns lambda.min
-  stack = NULL # for generally having a unique dataframe for each drug
+  stack = NULL, # for generally having a unique dataframe for each drug
+  args = args
 ){
   if(!stack){
     if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}
@@ -108,7 +109,8 @@ make_fit <- function(
   
   message("Initialize Method ...")
   if(method %in% c("dnn")){
-    h2o.init(ip="localhost", port=8502)
+    port
+    h2o.init(ip="localhost", port=)
   }
   
   message("Starting to fit ",method," ...")
@@ -144,6 +146,7 @@ make_fit <- function(
       }
       message(paste0("...for fold ",as.character(i)))
       message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
+      message(paste0("...selected ",as.character(length(FILTER_FEATURE_NAMES[[j]]))," features..."))
       
       y_name <- as.character(colnames(phenotype_matrix)[j])
       y_train <- (phenotype_matrix[folds$train_sets[[i]],j, drop=F])[!is.na(phenotype_matrix[folds$train_sets[[i]],j]),,drop = F]
@@ -246,8 +249,8 @@ make_fit_whole <- function(
   intersect <- intersect(row.names(feature_matrix), row.names(phenotype_matrix))
   
   message("Initialize Method ...")
-  if(method %in% c("rf","dnn")){
-    h2o.init()
+  if(method %in% c("dnn")){
+    h2o.init(ip="localhost", port=8502)
   }
   
   message("Starting to fit ",method," ...")
