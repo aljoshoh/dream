@@ -90,7 +90,7 @@ make_fit <- function(
   feature_matrix = NULL, # Numerical feature matrix
   phenotype_matrix = NULL, # Numerical pheontype matrix 
   folds = NULL, # fold object created in last step
-  FUN = function(x,y){return(x)}, # Pass filtering function for cv sets internally, default is identity function
+  FUN = function(x,y){res<-lapply(1:ncol(y),function(z) colnames(x));return(res)}, # Pass filtering function for cv sets internally, default is identity function
   hyperparam = c("alpha"=0.5), # Hyperparamter for methods
   method = "glm", # Method
   cvglm = F, # If glm should be cross-validated for the lambda parameter, e.g. for benchmarking
@@ -113,7 +113,7 @@ make_fit <- function(
   
   message("Starting to fit ",method," ...")
   score <- matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix))
-  gene_names_filtered <- list()
+  gene_names_filtered <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
   param <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
   
   if(method == "cox"){ # Cox needs special treatment, this puts the data-matrix back to a single column
@@ -130,9 +130,9 @@ make_fit <- function(
     if(!stack){
       message(paste0("Executing feature selection for fold ",as.character(i)))
       test <<- feature_matrix[folds$train_sets[[i]],]
-      FILTER_FEATURE_NAMES <- colnames(FUN(feature_matrix[folds$train_sets[[i]],], phenotype_matrix[folds$train_sets[[i]],]))
+      FILTER_FEATURE_NAMES <- FUN(feature_matrix[folds$train_sets[[i]],], phenotype_matrix[folds$train_sets[[i]],])
       ####################
-      message(paste0("-> Found ",as.character(length(FILTER_FEATURE_NAMES))," genes !"))
+      message(paste0("-> Length of feature names: ",as.character(length(FILTER_FEATURE_NAMES))," !"))
     }
     
     #########BIG FOR LOOP
@@ -140,7 +140,7 @@ make_fit <- function(
       
       if(stack){ #if model stacking, get the feature matrix for each drug seperately
         feature_matrix <- feature_matrix_prestack[[j]]
-        FILTER_FEATURE_NAMES <- colnames(feature_matrix)
+        FILTER_FEATURE_NAMES <- lapply(1:ncol(phenotype_matrix), function(x) colnames(feature_matrix))
       }
       message(paste0("...for fold ",as.character(i)))
       message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
@@ -149,12 +149,12 @@ make_fit <- function(
       y_train <- (phenotype_matrix[folds$train_sets[[i]],j, drop=F])[!is.na(phenotype_matrix[folds$train_sets[[i]],j]),,drop = F]
       
       if(method == "cox"){ ### HACK-BUGFIX, cause of removing the NA from the phenotype data in the line above
-        x_train <- feature_matrix[folds$train_sets[[i]],FILTER_FEATURE_NAMES]
+        x_train <- feature_matrix[folds$train_sets[[i]],FILTER_FEATURE_NAMES[[j]]] # add different for each drug
       } else {
-        x_train <- feature_matrix[names(y_train[,y_name]),FILTER_FEATURE_NAMES]
+        x_train <- feature_matrix[names(y_train[,y_name]),FILTER_FEATURE_NAMES[[j]]] # add different for each drug
       }
       
-      x_test <- feature_matrix[folds$test_sets[[i]],FILTER_FEATURE_NAMES]
+      x_test <- feature_matrix[folds$test_sets[[i]],FILTER_FEATURE_NAMES[[j]]]
       y_test <- phenotype_matrix[ folds$test_sets[[i]] ,j]
       
       set.seed(seed)
@@ -208,9 +208,9 @@ make_fit <- function(
       }else{
         param[i,j] <- model$fit$lambda.min
       }
+      gene_names_filtered[[i,j]] <- FILTER_FEATURE_NAMES[[j]]
     }
     ##################
-    gene_names_filtered[[i]] <- FILTER_FEATURE_NAMES
   }
   
   message("End method ...")
