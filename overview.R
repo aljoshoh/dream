@@ -42,3 +42,7 @@ View(list$score)
 
 ## PHONG
 test <-  AnvSigGen(as.matrix(rna[,1:20]), as.matrix(auc))
+
+
+
+test <- loadRData("features/drugs/drug_class.RData")

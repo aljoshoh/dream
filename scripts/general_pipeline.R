@@ -49,27 +49,3 @@ models_list <- run_pipeline_benchmark(
 # @phong: the method "make_fit" does not yet return the results of the filtering
 
 save(models_list, file = paste0("outputs/",directory,"/","dnn_","default._10fold_cvseed1_instance",as.character(args),".RData"))
-
-
-
-
-
-########### FURTHER STEPS FOR BUILDING THE FULL MODEL
-# You can do these things also in a separate scripts, since these are not that computationally heavy
-if(FALSE){
-  
-  lambda_min <- lambda_min(
-    pipeline_object = models_list # the object created from the pipeline object, only works if returnFit=F
-  )
-  
-  final_model_list <- run_pipeline_final(
-    feature_path = "features/alex_features.RData", # path to features
-    response_path = "features/alex_phenotypes.RData", # path to response
-    submission = T,
-    FUN = function(x){return(x)},
-    method = "glm",
-    hyperparam = c("alpha"=0.5)
-  )
-  # you can "predict(final_model_list[[1]], s = lambda_min[[1]], newx=blablala)" for choosing lambda with optimal cv-score
-}
-#####################################################

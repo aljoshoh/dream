@@ -108,7 +108,7 @@ make_fit <- function(
   
   message("Initialize Method ...")
   if(method %in% c("dnn")){
-    h2o.init()
+    h2o.init(ip="localhost", port=8502)
   }
   
   message("Starting to fit ",method," ...")
