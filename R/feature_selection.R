@@ -21,18 +21,15 @@ AnvSigNumFeature = function(feature, auc){
       next
     }
     auc_d = auc_d[order(auc_d, decreasing = T)]
-    top_d = head(auc_d, n=10)  
-    bot_d = tail(auc_d, n=10) 
     p_val_vec = vector(mode = "numeric", length = ncol(feature))
     names(p_val_vec) = colnames(feature)
     
     for (f in colnames(feature)) {
       feature_f = feature[, f] 
       names(feature_f) = rownames(feature)
-      tmp_df = data.frame(value = c(feature_f[names(top_d)], feature_f[names(bot_d)]),
-                          group = rep(c("top", "bot"), each = 10))
-      anv = aov(value ~ group, tmp_df)
-      p_val = summary(anv)[[1]][1,5]
+      mod = lm(auc_d ~ feature_f)
+      tmp = summary(mod)
+      p_val = tmp$coefficients[2,4]
       p_val_vec = c(p_val_vec,p_val)
       
     }
