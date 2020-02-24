@@ -39,10 +39,8 @@ AnvSigNumFeature = function(feature, auc){
     
     p_val_vec = p.adjust(p_val_vec,"BH")
     p_val_vec = p_val_vec[order(p_val_vec)]
-    index = names(head(p_val_vec, n=100))
-    feature_sig_d = feature[,index]
     
-    feature_sig[[d]] = feature_sig_d
+    feature_sig[[d]] = names(head(p_val_vec, n=100))
   }
   
   return(feature_sig)
@@ -93,18 +91,13 @@ AnvSigCatFeature = function(feature, auc){
     
     p_val_vec = p.adjust(p_val_vec,"BH")
     p_val_vec = p_val_vec[order(p_val_vec)]
-    index = names(head(p_val_vec, n=100))
-    feature_sig_d = feature[,index]
     
-    feature_sig[[d]] = feature_sig_d
+    feature_sig[[d]] = names(head(p_val_vec, n=100))
     
   }
   
   return(feature_sig)
   
 }
-
-
-gen_select = AnvSigNumFeature(feature = rnaseq, auc = auc)
 
   
