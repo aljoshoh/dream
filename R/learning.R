@@ -109,8 +109,8 @@ make_fit <- function(
   
   message("Initialize Method ...")
   if(method %in% c("dnn")){
-    port
-    h2o.init(ip="localhost", port=)
+    #port <- 8500 #+as.numeric(args), cannot start at multiple ports
+    #h2o.init(port=port)
   }
   
   message("Starting to fit ",method," ...")
@@ -132,6 +132,8 @@ make_fit <- function(
     if(!stack){
       message(paste0("Executing feature selection for fold ",as.character(i)))
       test <<- feature_matrix[folds$train_sets[[i]],]
+      print(dim(feature_matrix[folds$train_sets[[i]],]))
+      print(dim(phenotype_matrix[folds$train_sets[[i]],]))
       FILTER_FEATURE_NAMES <- FUN(feature_matrix[folds$train_sets[[i]],], phenotype_matrix[folds$train_sets[[i]],])
       ####################
       message(paste0("-> Length of feature names: ",as.character(length(FILTER_FEATURE_NAMES))," !"))
@@ -217,8 +219,12 @@ make_fit <- function(
   }
   
   message("End method ...")
+  # gives error since is closes connection for all the workers i guess
   if(method %in% c("dnn")){
-    h2o.shutdown(prompt = F)
+    #h2o.shutdown(prompt = F)
+    h2o:::.h2o.garbageCollect()
+    h2o:::.h2o.garbageCollect()
+    h2o:::.h2o.garbageCollect()
   }
 
   return(list(score=score,
@@ -250,7 +256,7 @@ make_fit_whole <- function(
   
   message("Initialize Method ...")
   if(method %in% c("dnn")){
-    h2o.init(ip="localhost", port=8502)
+    h2o.init(port=8502, min_mem_size = "20G")
   }
   
   message("Starting to fit ",method," ...")
@@ -333,8 +339,12 @@ make_fit_whole <- function(
   }
   
   message("End method ...")
-  if(method %in% c("rf","dnn")){
-    h2o.shutdown(prompt = F)
+  # gives error since is closes connection for all the workers i guess
+  if(method %in% c("dnn")){
+    #h2o.shutdown(prompt = F)
+    h2o:::.h2o.garbageCollect()
+    h2o:::.h2o.garbageCollect()
+    h2o:::.h2o.garbageCollect()
   }
   
   return(list(score=score,

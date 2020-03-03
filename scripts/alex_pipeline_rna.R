@@ -8,20 +8,22 @@ print(args)
 ## note that our docker image is using r3.6.1
 source("R/learning.R")
 source("R/run_pipeline.R")
-source("R/select_gene_sc1.R")
+source("R/feature_selection.R")
 source("R/algorithms.R")
 source("R/general.R")
 
 #### SUBMISSION
-# ./SUBMIT.sh alex_pipeline.R 8 5
+# ./SUBMIT.sh alex_pipeline.R 8 5 <- old command
+# ./SUBMIT.sh alex_pipeline.R 40 1
 ###############
-args <- (args[2]-1)*8+args[1] #8=number of jobs per array
+#args <- (args[2]-1)*8+args[1] #8=number of jobs per array
+args <- args[2] #<- new command 
 print(paste0("Running with argument: ",as.character(args)))
 numberofargs <- 8*5 # if sequential, set to 1
 ###############
 
-directory <- "mut" #"rna"
-descriptor <- "mut" #"rna"
+directory <- "rna"#"mut" #"rna"
+descriptor <- "rna"#"mut" #"rna"
 
 feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # path to features
 response_path = paste0("features/",directory,"/",descriptor,"_response.RData") # path to response
@@ -39,8 +41,8 @@ models_list <- run_pipeline_benchmark(
   response_path = paste0("features/",directory,"/",descriptor,"_response_",as.character(args),".RData"), # path to response
   submission = T,
   kfold = 10, 
-  method = c("rf"),
-  hyperparam = list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
+  method = c("glm"),
+  hyperparam = c("alpha"=0.5), #list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1,
@@ -60,19 +62,35 @@ save(models_list, file = paste0("outputs/",directory,"/","dnn_","default._10fold
 ########### FURTHER STEPS FOR BUILDING THE FULL MODEL
 # You can do these things also in a separate scripts, since these are not that computationally heavy
 if(FALSE){
+
+  cv_models <- import_cv_results(
+    partial_path = paste0("dnn_","default._"),
+    directory = paste0("outputs/",directory)
+  )  
+  
   
   lambda_min <- lambda_min(
     pipeline_object = models_list # the object created from the pipeline object, only works if returnFit=F
   )
   
   final_model_list <- run_pipeline_final(
-    feature_path = "features/alex_features.RData", # path to features
-    response_path = "features/alex_phenotypes.RData", # path to response
+    feature_path = paste0("features/",directory,"/",descriptor,"_features.RData"), # path to features
+    response_path = paste0("features/",directory,"/",descriptor,"_response.RData"), # path to response
     submission = T,
     FUN = function(x){return(x)},
-    method = "glm",
-    hyperparam = c("alpha"=0.5)
+    method = "dnn",
+    hyperparam = NULL#c("alpha"=0.5)
   )
+  
+  save(models_list, file = paste0("outputs/",directory,"/","dnn_","default.RData"))
+  
+  
   # you can "predict(final_model_list[[1]], s = lambda_min[[1]], newx=blablala)" for choosing lambda with optimal cv-score
 }
 #####################################################
+
+
+
+
+
+
