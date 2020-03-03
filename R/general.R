@@ -47,6 +47,7 @@ import_cv_results <- function(
   for( file in files ){
     object <- loadRData(paste0(directory,"/",file))
     print(count)
+    print(paste0(directory,"/",file))
     if(count >1){
       cum_object$score <- cbind(cum_object$score, object$score)
       cum_object$param <- cbind(cum_object$param, object$param)

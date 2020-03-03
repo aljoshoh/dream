@@ -160,8 +160,14 @@ use_dnn <- function(
   fit <- h2o.deeplearning (x = colnames(x_train), y = y_name, training_frame = as.h2o(dff), seed = seed)
   
   message("        Validating...")
-  pred <- predict(fit, as.h2o(x_test))
-  pred <- as.data.frame(pred)[,1]
+  if(!is.null(x_test)){
+    x_test <- as.h2o(x_test)
+    pred <- predict(fit, x_test)
+    pred <- as.data.frame(pred)[,1]
+  }else{
+    pred <- NULL
+  }
+  
   diff <- pred - y_test
   
   return(list(pred=pred, diff=diff, fit=fit))

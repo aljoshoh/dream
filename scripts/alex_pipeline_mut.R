@@ -46,8 +46,8 @@ models_list <- run_pipeline_benchmark(
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1,
-  args = args,
-  FUN = AnvSigNumFeature
+  args = args
+  #FUN = AnvSigNumFeature
   
 )
 # also possible to add FUN=AnvSigGen 
@@ -64,7 +64,7 @@ save(models_list, file = paste0("outputs/",directory,"/","dnn_","default._10fold
 if(FALSE){
 
   cv_models <- import_cv_results(
-    partial_path = paste0("dnn_default._"), #paste0("dnn_","default._"),
+    partial_path = paste0("glm_a1._"), #paste0("dnn_","default._"),
     directory = paste0("outputs/",directory)
   )  
   
@@ -77,11 +77,11 @@ if(FALSE){
     feature_path = paste0("features/",directory,"/",descriptor,"_features.RData"), # path to features
     response_path = paste0("features/",directory,"/",descriptor,"_response.RData"), # path to response
     submission = T,
-    method = "dnn",
-    hyperparam = NULL#c("alpha"=0.5)
+    method = "glm",
+    hyperparam = c("alpha"=1.)#list(c(NULL),c(NULL))#NULL#c("alpha"=0.5)
   )
   
-  save(models_list, file = paste0("outputs/",directory,"/","dnn_","default.RData"))
+  save(final_model_list, file = paste0("outputs/",directory,"/","rf_","default.RData"))
   
   
   # you can "predict(final_model_list[[1]], s = lambda_min[[1]], newx=blablala)" for choosing lambda with optimal cv-score

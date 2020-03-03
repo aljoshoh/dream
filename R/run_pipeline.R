@@ -80,7 +80,7 @@ lambda_min <- function(
   ######################################################
   pipeline_object = NULL # the object created from the pipeline object
 ){
-  if(pipeline_object$returnFit){stop("This function only works if only lambda is returned !!!")}
+  #if(pipeline_object$returnFit){stop("This function only works if only lambda is returned !!!")}
   lambda_min <- lapply(1:(dim(pipeline_object$score)[2]), 
                        function(y) median(lapply(1:(dim(pipeline_object$score)[1]), 
                                                  function(x) pipeline_object$param[x,y][[1]][[1]]$lambda.min)%>% unlist))
