@@ -32,8 +32,12 @@ auc <- get_features(response_path)
 dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features.RData"))
 dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
 
+if(args ==1){
+  auc <- auc
+} else {
+  auc <- cut_df(auc, numberofargs,args)
+}
 
-auc <- cut_df(auc, numberofargs,args)	
 dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response_",as.character(args),".RData"))
 
 models_list <- run_pipeline_benchmark(

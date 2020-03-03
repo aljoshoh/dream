@@ -81,8 +81,8 @@ if(FALSE){
     hyperparam = c("alpha"=1.)#list(c(NULL),c(NULL))#NULL#c("alpha"=0.5)
   )
   
-  save(final_model_list, file = paste0("outputs/",directory,"/","rf_","default.RData"))
-  
+  save(final_model_list, file = paste0("outputs/",directory,"/","glm_","a1.RData"))
+  save(lambda_min, file = paste0("outputs/",directory,"/","glm_","a1_lambda.RData"))
   
   # you can "predict(final_model_list[[1]], s = lambda_min[[1]], newx=blablala)" for choosing lambda with optimal cv-score
 }

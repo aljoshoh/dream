@@ -19,7 +19,7 @@ source("R/general.R")
 #args <- (args[2]-1)*8+args[1] #8=number of jobs per array
 args <- args[2] #<- new command 
 print(paste0("Running with argument: ",as.character(args)))
-numberofargs <- 2 # if sequential, set to 1
+numberofargs <- 1 # if sequential, set to 1
 ###############
 
 port <- 8500 
@@ -36,7 +36,11 @@ dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features
 dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
 
 
-auc <- cut_df(auc, numberofargs,args)	
+if(args ==1){
+  auc <- auc
+} else {
+  auc <- cut_df(auc, numberofargs,args)
+}
 dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response_",as.character(args),".RData"))
 
 models_list <- run_pipeline_benchmark(
