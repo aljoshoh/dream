@@ -157,7 +157,7 @@ use_dnn <- function(
   dff <- cbind(x_train,y_train)
   
   message("        Fitting...")
-  fit <- h2o.deeplearning (x = colnames(x_train), y = y_name, training_frame = as.h2o(dff), seed = seed)
+  fit <<- h2o.deeplearning (x = colnames(x_train), y = y_name, training_frame = as.h2o(dff), seed = seed)
   
   message("        Validating...")
   if(!is.null(x_test)){
@@ -169,6 +169,7 @@ use_dnn <- function(
   }
   
   diff <- pred - y_test
+  fit <- h2o.saveModel(object=fit, path="metadata/h2odnn/", force=TRUE)
   
   return(list(pred=pred, diff=diff, fit=fit))
 }######################################################

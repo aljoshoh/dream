@@ -10,29 +10,34 @@ source("R/select_gene_sc1.R")
 source("R/algorithms.R")
 
 
-feature_path = "features/alex_features.RData" # path to features
-response_path = "features/alex_phenotypes.RData" # path to response
-rna <- get_features(feature_path)
-auc <- get_features(response_path)
+#feature_path = "features/alex_features.RData" # path to features
+#response_path = "features/alex_phenotypes.RData" # path to response
+#rna <- get_features(feature_path)
+#auc <- get_features(response_path)
 
-rna <- rna[,1:1000]
-auc <- auc[,1:2]
+#rna <- rna[,1:1000]
+#auc <- auc[,1:2]
 
-dump_features(auc, path = "features/alex_phenotypes_red.RData")
-dump_features(rna, path = "features/alex_features_red.RData")
-dump_features(models_list, path = "features/alex_rf_models.RData")
+#dump_features(auc, path = "features/alex_phenotypes_red.RData")
+#dump_features(rna, path = "features/alex_features_red.RData")
+#dump_features(models_list, path = "features/alex_rf_models.RData")
 
 
-modelsa <- get_features("features/alex_glm_models.RData", matrixfy = F)
-modelsb <- get_features("features/alex_rf_models.RData", matrixfy = F)
+modelsa <- get_features("outputs/mut/glm_a1_cv.RData", matrixfy = F)
+modelsb <- get_features("outputs/mut/rf_default_cv.RData", matrixfy = F)
+modelsc <- get_features("outputs/mut/dnn_default_cv.RData", matrixfy = F)
 
 
 ### $cv of the two benchmarking objects must match
-
+feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # path to features
+response_path = paste0("features/",directory,"/",descriptor,"_response.RData") # path to response
+rna <- get_features(feature_path)
+auc <- get_features(response_path)
 preds_stack <- lapply(1:ncol(auc), function(y){
-model1 <- unlist(lapply(1:length(modelsb$cv$test_sets), function(x) predict(modelsb$param[[x,y]][[1]], newdata = rna[modelsb$cv$test_sets[[x]],])));
-model2 <- unlist(lapply(1:length(modelsa$cv$test_sets), function(x) predict(modelsa$param[[x,y]][[1]], newx = rna[modelsa$cv$test_sets[[x]],], s = 'lambda.min')[,1]));
-temp <- cbind(model1, model2);
+model1 <- unlist(lapply(1:length(modelsa$cv$test_sets), function(x) predict(modelsa$param[[x,y]][[1]], newx = rna[modelsa$cv$test_sets[[x]],], s = 'lambda.min')[,1]));
+model2 <- unlist(lapply(1:length(modelsb$cv$test_sets), function(x) predict(modelsb$param[[x,y]][[1]], newdata = rna[modelsb$cv$test_sets[[x]],])));
+model3 <- unlist(lapply(1:length(modelsc$cv$test_sets), function(x) predict(modelsc$param[[x,y]][[1]], newdata = as.h2o(rna[modelsc$cv$test_sets[[x]],]))));
+temp <- cbind(model1, model2, model3);
 return(temp)
 })
 

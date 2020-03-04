@@ -32,7 +32,7 @@ auc <- get_features(response_path)
 dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features.RData"))
 dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
 
-if(args ==1){
+if(numberofargs ==1){
   auc <- auc
 } else {
   auc <- cut_df(auc, numberofargs,args)
@@ -46,7 +46,7 @@ models_list <- run_pipeline_benchmark(
   submission = T,
   kfold = 10, 
   method = c("glm"),
-  hyperparam = c("alpha"=0.5), #list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
+  hyperparam = c("alpha"=1.), #list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1,
@@ -57,7 +57,7 @@ models_list <- run_pipeline_benchmark(
 # also possible to add FUN=AnvSigGen 
 # @phong: the method "make_fit" does not yet return the results of the filtering
 
-save(models_list, file = paste0("outputs/",directory,"/","dnn_","default._10fold_cvseed1_instance",as.character(args),"_test.RData"))
+save(models_list, file = paste0("outputs/",directory,"/","glm","a1._10fold_cvseed1_instance",as.character(args),"_test.RData"))
 
 
 
@@ -86,7 +86,7 @@ if(FALSE){
     hyperparam = NULL#c("alpha"=0.5)
   )
   
-  save(models_list, file = paste0("outputs/",directory,"/","dnn_","default.RData"))
+  save(final_models_list, file = paste0("outputs/",directory,"/","dnn_","default.RData"))
   
   
   # you can "predict(final_model_list[[1]], s = lambda_min[[1]], newx=blablala)" for choosing lambda with optimal cv-score

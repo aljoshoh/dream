@@ -64,10 +64,10 @@ save(models_list, file = paste0("outputs/",directory,"/","dnn_","default._10fold
 if(FALSE){
 
   cv_models <- import_cv_results(
-    partial_path = paste0("glm_a1._"), #paste0("dnn_","default._"),
+    partial_path = paste0("rf_default._"), #paste0("dnn_","default._"),
     directory = paste0("outputs/",directory)
   )  
-  
+  save(cv_models, file = paste0("outputs/",directory,"/","rf_default","_cv.RData"))
   
   lambda_min <- lambda_min(
     pipeline_object = cv_models # the object created from the pipeline object, only works if returnFit=F

@@ -36,7 +36,7 @@ dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features
 dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
 
 
-if(args ==1){
+if(numberofargs ==1){
   auc <- auc
 } else {
   auc <- cut_df(auc, numberofargs,args)
@@ -57,9 +57,8 @@ models_list <- run_pipeline_benchmark(
   #FUN = AnvSigNumFeature
   
 )
-# also possible to add FUN=AnvSigGen 
-# @phong: the method "make_fit" does not yet return the results of the filtering
 
+# Save the model
 save(models_list, file = paste0("outputs/",directory,"/","dnn_","default._10fold_cvseed1_instance",as.character(args),"_server.RData"))
 
 
