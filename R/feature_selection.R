@@ -11,6 +11,9 @@ AnvSigNumFeature = function(feature, auc){
     auc = auc[rownames(feature), ]
   }
   
+  top = apply(feature, 2, sd) %>% sort(decreasing = T) %>% head(n=5000)
+  feature = feature[, names(top)]
+  
   feature_sig = list()
   
   for (d in colnames(auc)) {
@@ -20,24 +23,34 @@ AnvSigNumFeature = function(feature, auc){
     if (length(auc_d) < 20){
       next
     }
-    auc_d = auc_d[order(auc_d, decreasing = T)]
+    
     p_val_vec = vector(mode = "numeric", length = ncol(feature))
     names(p_val_vec) = colnames(feature)
     
     for (f in colnames(feature)) {
       feature_f = feature[, f] 
-      names(feature_f) = rownames(feature)
+      feature_f = feature_f[names(auc_d)]
+      
       mod = lm(auc_d ~ feature_f)
-      tmp = summary(mod)
-      p_val = tmp$coefficients[2,4]
-      p_val_vec = c(p_val_vec,p_val)
+      
+      if (dim(coef(summary(mod))) == c(2,4)){
+        p_val = coef(summary(mod))[2,4]
+        p_val_vec[f] = p_val
+      } else {
+        p_val_vec[f] = NA
+      }
       
     }
     
     p_val_vec = p.adjust(p_val_vec,"BH")
     p_val_vec = p_val_vec[order(p_val_vec)]
     
-    feature_sig[[d]] = names(head(p_val_vec, n=100))
+    if (length(p_val_vec) > 100){
+      feature_sig[[d]] = names(head(p_val_vec, n=100))
+    } else {
+      feature_sig[[d]] = p_val_vec
+    }
+    
   }
   
   return(feature_sig)
