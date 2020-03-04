@@ -87,7 +87,8 @@ AnvSigCatFeature = function(feature, auc){
       names(feature_f) = rownames(feature)
       feature_f = feature_f[names(auc_d)]
       
-      if (nlevels(as.factor(feature_f)) < 2) {
+      if (nlevels(as.factor(feature_f)) < 2 |
+          any(table(as.factor(feature_f)) < 1)) {
         next
       }
       
@@ -95,14 +96,14 @@ AnvSigCatFeature = function(feature, auc){
                           group = feature_f)
       anv = aov(auc ~ group, tmp_df)
       p_val = summary(anv)[[1]][1,5]
-      p_val_vec = c(p_val_vec,p_val)
+      p_val_vec[f] = p_val
       
     }
     
     p_val_vec = p.adjust(p_val_vec,"BH")
     p_val_vec = p_val_vec[order(p_val_vec)]
     
-    feature_sig[[d]] = names(head(p_val_vec, n=100))
+    feature_sig[[d]] = names(head(p_val_vec, n=5))
     
   }
   
