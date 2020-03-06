@@ -17,7 +17,7 @@ source("R/general.R")
 # ./SUBMIT.sh alex_pipeline.R 40 1
 ###############
 #args <- (args[2]-1)*8+args[1] #8=number of jobs per array
-args <- args[2] #<- new command 
+args <- args[1] #<- new command 
 print(paste0("Running with argument: ",as.character(args)))
 numberofargs <- 8*5 # if sequential, set to 1
 ###############

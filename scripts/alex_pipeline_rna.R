@@ -17,7 +17,7 @@ source("R/general.R")
 # ./SUBMIT.sh alex_pipeline.R 40 1
 ###############
 #args <- (args[2]-1)*8+args[1] #8=number of jobs per array
-args <- args[2] #<- new command 
+args <- args[1] #<- new command 
 print(paste0("Running with argument: ",as.character(args)))
 numberofargs <- 8*5 # if sequential, set to 1
 ###############
@@ -29,8 +29,8 @@ feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # 
 response_path = paste0("features/",directory,"/",descriptor,"_response.RData") # path to response
 rna <- get_features(feature_path)
 auc <- get_features(response_path)
-dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features.RData"))
-dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
+#dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features.RData"))
+#dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
 
 if(numberofargs ==1){
   auc <- auc
@@ -46,7 +46,7 @@ models_list <- run_pipeline_benchmark(
   submission = T,
   kfold = 10, 
   method = c("glm"),
-  hyperparam = c("alpha"=1.), #list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=0.5),
+  hyperparam = list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=1.),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1,
@@ -57,7 +57,7 @@ models_list <- run_pipeline_benchmark(
 # also possible to add FUN=AnvSigGen 
 # @phong: the method "make_fit" does not yet return the results of the filtering
 
-save(models_list, file = paste0("outputs/",directory,"/","glm","a1._10fold_cvseed1_instance",as.character(args),"_test.RData"))
+save(models_list, file = paste0("outputs/",directory,"/","glm","_a1._10fold_cvseed1_instance",as.character(args),".RData")) # "_test"
 
 
 

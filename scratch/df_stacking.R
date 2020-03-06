@@ -27,6 +27,9 @@ modelsa <- get_features("outputs/mut/glm_a1_cv.RData", matrixfy = F)
 modelsb <- get_features("outputs/mut/rf_default_cv.RData", matrixfy = F)
 modelsc <- get_features("outputs/mut/dnn_default_cv.RData", matrixfy = F)
 
+h2o.init()
+modelsc$param_paths <- modelsc$param
+
 
 ### $cv of the two benchmarking objects must match
 feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # path to features

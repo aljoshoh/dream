@@ -7,6 +7,7 @@ dream_aml.Rproj
 features/*
 outputs/*
 metadata/*
+dream_data_leaderboard/
 
 !features/.gitkeep
 !metadata/.gitkeep
