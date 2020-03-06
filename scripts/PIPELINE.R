@@ -13,13 +13,12 @@ source("R/algorithms.R")
 source("R/general.R")
 
 #### SUBMISSION
-# ./SUBMIT.sh alex_pipeline.R 8 5 <- old command
-# ./SUBMIT.sh alex_pipeline.R 40 1
+# ./SUBMIT.sh PIPELINE.R 40 1
 ###############
 #args <- (args[2]-1)*8+args[1] #8=number of jobs per array
 args <- args[1] #<- new command 
 print(paste0("Running with argument: ",as.character(args)))
-numberofargs <- 8*5 # if sequential, set to 1
+numberofargs <- 40 # if sequential, set to 1
 ###############
 
 directory <- "rna"#"mut" #"rna"
@@ -30,8 +29,8 @@ response_path = paste0("features/",directory,"/",descriptor,"_response.RData") #
 rna <- get_features(feature_path)
 auc <- get_features(response_path)
 descriptor <- "glm"
-#dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features.RData"))
-#dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
+dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features.RData"))
+dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
 
 if(numberofargs ==1){
   auc <- auc

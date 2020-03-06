@@ -8,6 +8,8 @@ features/*
 outputs/*
 metadata/*
 dream_data_leaderboard/
+.RData
+features_validation/
 
 !features/.gitkeep
 !metadata/.gitkeep
