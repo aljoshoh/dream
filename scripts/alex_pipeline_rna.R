@@ -46,7 +46,7 @@ models_list <- run_pipeline_benchmark(
   submission = T,
   kfold = 10, 
   method = c("glm"),
-  hyperparam = list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=1.),
+  hyperparam = c("alpha"=1.), #list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=1.),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1,
