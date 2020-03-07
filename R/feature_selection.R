@@ -48,7 +48,7 @@ AnvSigNumFeature = function(feature, auc){
     if (length(p_val_vec) > 100){
       feature_sig[[d]] = names(head(p_val_vec, n=100))
     } else {
-      feature_sig[[d]] = p_val_vec
+      feature_sig[[d]] = names(p_val_vec) # fixed a bug here
     }
     
   }

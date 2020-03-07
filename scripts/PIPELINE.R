@@ -12,41 +12,25 @@ source("R/feature_selection.R")
 source("R/algorithms.R")
 source("R/general.R")
 
-#### SUBMISSION
-# ./SUBMIT.sh PIPELINE.R 40 1
-###############
-#args <- (args[2]-1)*8+args[1] #8=number of jobs per array
+#### how to run on cluster
+# ./SUBMIT.sh PIPELINE.R numberofargs 1
 args <- args[1] #<- new command 
 print(paste0("Running with argument: ",as.character(args)))
-numberofargs <- 40 # if sequential, set to 1
-###############
+##########################
 
-directory <- "rna"#"mut" #"rna"
-descriptor <- "rna"#"mut" #"rna"
-
-feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # path to features
-response_path = paste0("features/",directory,"/",descriptor,"_response.RData") # path to response
-rna <- get_features(feature_path)
-auc <- get_features(response_path)
-descriptor <- "glm"
-dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features.RData"))
-dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
-
-if(numberofargs ==1){
-  auc <- auc
-} else {
-  auc <- cut_df(auc, numberofargs,args)
-}
-
-dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response_",as.character(args),".RData"))
-
+### SCRIPT PARAMETER
+directory <- "mut-auc"#"mut" #"rna"
+descriptor <- "dnn" # the descriptor means the method in this script, not the same as in PREPROCESS.R
+param <- c("alpha"=1.) #list(c(NULL),c(NULL)) #list(c(333),c(500)) # c("alpha"=1.)
+####################
+if(descriptor=="dnn"){h2o.init(port=8504)}
 models_list <- run_pipeline_benchmark(
   feature_path = paste0("features/",directory,"/",descriptor,"_features.RData"), # path to features
   response_path = paste0("features/",directory,"/",descriptor,"_response_",as.character(args),".RData"), # path to response
   submission = T,
   kfold = 10, 
   method = c(descriptor),
-  hyperparam = c("alpha"=1.), # list(c(NULL),c(NULL)), #list(c(333),c(500)), # c("alpha"=1.),
+  hyperparam = param,
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1,
@@ -54,9 +38,6 @@ models_list <- run_pipeline_benchmark(
   FUN = AnvSigNumFeature
   
 )
-# also possible to add FUN=AnvSigGen 
-# @phong: the method "make_fit" does not yet return the results of the filtering
-
 save(models_list, file = paste0("outputs/",directory,"/",descriptor,"_default._10fold_cvseed1_instance",as.character(args),".RData")) # "_test"
 
 
@@ -68,25 +49,29 @@ save(models_list, file = paste0("outputs/",directory,"/",descriptor,"_default._1
 if(FALSE){
 
   cv_models <- import_cv_results(
-    partial_path = paste0("dnn_","default._"),
+    partial_path = paste0(descriptor,"_default._"),
     directory = paste0("outputs/",directory)
   )  
   
+  save(cv_models, file = paste0("outputs/",directory,"/",descriptor,"_default_cv.RData"))
   
-  lambda_min <- lambda_min(
-    pipeline_object = models_list # the object created from the pipeline object, only works if returnFit=F
-  )
+  if(descriptor=="glm"){
+    lambda_min <- lambda_min(
+      pipeline_object = cv_models # the object created from the pipeline object, only works if returnFit=F
+    )
+  }
   
+  if(descriptor=="dnn"){h2o.init(port=8510)}
   final_model_list <- run_pipeline_final(
     feature_path = paste0("features/",directory,"/",descriptor,"_features.RData"), # path to features
     response_path = paste0("features/",directory,"/",descriptor,"_response.RData"), # path to response
     submission = T,
-    FUN = function(x){return(x)},
-    method = "dnn",
-    hyperparam = NULL#c("alpha"=0.5)
+    method = descriptor,
+    hyperparam = param,
+    FUN = AnvSigNumFeature
   )
   
-  save(final_models_list, file = paste0("outputs/",directory,"/","dnn_","default.RData"))
+  save(final_model_list, file = paste0("outputs/",directory,"/",descriptor,"_default.RData"))
   
   
   # you can "predict(final_model_list[[1]], s = lambda_min[[1]], newx=blablala)" for choosing lambda with optimal cv-score

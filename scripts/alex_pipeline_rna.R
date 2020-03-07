@@ -25,8 +25,8 @@ numberofargs <- 8*5 # if sequential, set to 1
 directory <- "rna"#"mut" #"rna"
 descriptor <- "rna"#"mut" #"rna"
 
-feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # path to features
-response_path = paste0("features/",directory,"/",descriptor,"_response.RData") # path to response
+feature_path = paste0("features_validation/",directory,"/",descriptor,"_features.RData") # path to features
+response_path = paste0("features_validation/",directory,"/",descriptor,"_response.RData") # path to response
 rna <- get_features(feature_path)
 auc <- get_features(response_path)
 descriptor <- "glm"
@@ -39,11 +39,11 @@ if(numberofargs ==1){
   auc <- cut_df(auc, numberofargs,args)
 }
 
-dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response_",as.character(args),".RData"))
+dump_features(auc, path = paste0("features_validation/",directory,"/",descriptor,"_response_",as.character(args),".RData"))
 
 models_list <- run_pipeline_benchmark(
-  feature_path = paste0("features/",directory,"/",descriptor,"_features.RData"), # path to features
-  response_path = paste0("features/",directory,"/",descriptor,"_response_",as.character(args),".RData"), # path to response
+  feature_path = paste0("features_validation/",directory,"/",descriptor,"_features.RData"), # path to features
+  response_path = paste0("features_validation/",directory,"/",descriptor,"_response_",as.character(args),".RData"), # path to response
   submission = T,
   kfold = 10, 
   method = c(descriptor),
