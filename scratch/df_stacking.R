@@ -64,11 +64,10 @@ for(y in 1:ncol(auc)){
 }
 
 stack_features <- preds_stack
-dump_features(stack_features, path = "features/alex_stacked_models_test.RData")
-save(cv_models, file = paste0("outputs/",directory,"/",descriptor,"_default_cv.RData"))
+dump_features(stack_features, path = "features/alex_stacked_models_muttest.RData")
 models_list_stacked <- run_pipeline_benchmark(
-  feature_path = "features/alex_stacked_models_test.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
-  response_path = "features/alex_phenotypes_red.RData", # path to response
+  feature_path = "features/alex_stacked_models_muttest.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
+  response_path = paste0("features/",directory,"/",descriptor,"_response.RData"), # path to response
   submission = F,
   kfold = NULL, 
   method = "rf",
@@ -79,8 +78,17 @@ models_list_stacked <- run_pipeline_benchmark(
   CVBuilt = modelsa$cv,
   stack = T
 )
-models_list_stacked$score
 
+models_list_stacked <- run_pipeline_final(
+  feature_path = "features/alex_stacked_models_muttest.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
+  response_path = paste0("features/",directory,"/",descriptor,"_response.RData"), # path to response
+  submission = T,
+  method = "rf",
+  hyperparam = list(c(NULL),c(NULL)), #c("alpha"=0.5), #list(c(333),c(500)), # c("alpha"=0.5),
+  stack = T
+)
+
+dump_features(models_list_stacked, path = "outputss/alex_stacked_models_muttest.RData")
 
 
 

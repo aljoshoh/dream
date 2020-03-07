@@ -97,7 +97,8 @@ run_pipeline_final <- function(
   submission = T,
   FUN = function(x){return(x)}, # Function on feature set of training data, must return matrix of features (same names as input)
   method = "glm",
-  hyperparam = c("alpha"=0.5)
+  hyperparam = c("alpha"=0.5),
+  stack = F
 ){
   if(submission){setwd("/storage/groups/cbm01/workspace/dream_aml/")}
   
