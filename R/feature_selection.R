@@ -184,7 +184,7 @@ AnvSigSurvFeature = function(feature, auc){
     auc = auc[rownames(feature), ]
   }
   
-  top = apply(feature, 2, sd) %>% sort(decreasing = T) %>% head(n=10000) # alex edit, select 10000
+  top = apply(feature, 2, sd) %>% sort(decreasing = T) %>% head(n=1000) # alex edit, select 1000
   feature = feature[, names(top)]
   
   feature_sig = list()
@@ -206,7 +206,8 @@ AnvSigSurvFeature = function(feature, auc){
       feature_f = feature_f[names(auc_d)]
       
       #mod = lm(auc_d ~ feature_f)
-      mod = cor(auc_d, feature_f, use = "complete.obs")
+      #mod = cor(auc_d, feature_f, use = "complete.obs")   #<<<<-----------------------------------------------------------------------
+      mod = 1
       
       #if (dim(coef(summary(mod))) == c(2,4)){
       #  p_val = coef(summary(mod))[2,4]

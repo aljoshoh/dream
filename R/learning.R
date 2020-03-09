@@ -121,7 +121,7 @@ make_fit <- function(
   param <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
   
   if(method == "cox"){ # Cox needs special treatment, this puts the data-matrix back to a single column
-    survival <- as.data.frame(Surv(phenotype_matrix[,1], phenotype_matrix[,2]))
+    survival <- as.data.frame(Surv(event = phenotype_matrix[,1], time = phenotype_matrix[,2]))
     row.names(survival) <- row.names(phenotype_matrix)
     phenotype_matrix <- survival
   }
@@ -151,9 +151,7 @@ make_fit <- function(
       
       
       y_name <- as.character(colnames(phenotype_matrix)[j])
-      print(phenotype_matrix)
-      print(dim((phenotype_matrix[folds$train_sets[[i]],j, drop=F])))
-      print(phenotype_matrix[folds$train_sets[[i]],j])
+
       y_train <- (phenotype_matrix[folds$train_sets[[i]],j, drop=F])[!is.na(phenotype_matrix[folds$train_sets[[i]],j]),,drop = F]
       
       if(method == "cox"){ ### HACK-BUGFIX, cause of removing the NA from the phenotype data in the line above
@@ -176,8 +174,6 @@ make_fit <- function(
       }
       
       if(method == "cox"){
-        print(dim(y_train))
-        print(dim(x_train))
         model <- use_cox(x_train, y_train, x_test, y_test,
                          hyperparam = hyperparam,
                          y_name = y_name,
@@ -271,7 +267,7 @@ make_fit_whole <- function(
   gene_names_filtered <- as.data.frame(matrix(NA,nrow = 1, ncol = ncol(phenotype_matrix)))
   
   if(method == "cox"){ # Cox needs special treatment, this puts the data-matrix back to a single column
-    survival <- as.data.frame(Surv(phenotype_matrix[,1], phenotype_matrix[,2]))
+    survival <- as.data.frame(Surv(event = phenotype_matrix[,1], time = phenotype_matrix[,2]))
     row.names(survival) <- row.names(phenotype_matrix)
     phenotype_matrix <- survival
   }

@@ -108,6 +108,7 @@ resp$vitalStatus <- as.character(resp$vitalStatus)
 resp$vitalStatus[resp$vitalStatus == "Alive"] <- 1
 resp$vitalStatus[resp$vitalStatus == "Dead"] <- 0
 resp$vitalStatus <- as.numeric(resp$vitalStatus)
+resp <- resp[resp$overallSurvival != 0,]
 
 
 
@@ -119,7 +120,7 @@ response_path = paste0("features/",directory,"/",descriptor,"_response.RData") #
 feature_path
 response_path
 
-save(clin, file = feature_path)
+#save(clin, file = feature_path)
 save(resp, file = response_path)
 
 

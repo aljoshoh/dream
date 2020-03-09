@@ -20,7 +20,7 @@ print(paste0("Running with argument: ",as.character(args)))
 ##########################
 
 ### SCRIPT PARAMETER
-directory <- "mut-surv"#"mut" #"rna"
+directory <- "clin-surv"#"mut" #"rna"
 descriptor <- "cox" # the descriptor means the method in this script, not the same as in PREPROCESS.R
 param <- c("alpha"=1.) #list(c(NULL),c(NULL)) #list(c(333),c(500)) # c("alpha"=1.)
 ####################
@@ -35,7 +35,7 @@ models_list <- run_pipeline_benchmark(
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1,
-  #FUN = AnvSigNumFeature,
+  FUN = AnvSigSurvFeature,
   args = args
 )
 save(models_list, file = paste0("outputs/",directory,"/",descriptor,"_default._10fold_cvseed1_instance",as.character(args),".RData")) # "_test"
