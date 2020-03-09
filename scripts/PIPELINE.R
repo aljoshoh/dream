@@ -3,6 +3,7 @@ setwd("/storage/groups/cbm01/workspace/dream_aml/")
 args <- as.numeric(commandArgs(trailingOnly = TRUE)); args <- args # get the submission script argument
 print("Arguments:")
 print(args)
+#args <- 1 # TEMPORALY LOCALLY NEEDED FOR TESTING
 
 ## Alex' Models
 ## note that our docker image is using r3.6.1
@@ -19,9 +20,9 @@ print(paste0("Running with argument: ",as.character(args)))
 ##########################
 
 ### SCRIPT PARAMETER
-directory <- "mut-auc"#"mut" #"rna"
-descriptor <- "dnn" # the descriptor means the method in this script, not the same as in PREPROCESS.R
-param <- c("alpha"=1.) #list(c(NULL),c(NULL)) #list(c(333),c(500)) # c("alpha"=1.)
+directory <- "rna-auc"#"mut" #"rna"
+descriptor <- "rf" # the descriptor means the method in this script, not the same as in PREPROCESS.R
+param <- list(c(NULL),c(NULL)) #list(c(333),c(500)) # c("alpha"=1.)
 ####################
 if(descriptor=="dnn"){h2o.init(port=8504)}
 models_list <- run_pipeline_benchmark(

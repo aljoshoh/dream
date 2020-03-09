@@ -4,17 +4,16 @@ AnvSigNumFeature = function(feature, auc){
   #feature: matrix of numerical data, with samples as rows and features as columns
   #auc: matrix of drug data, samples as rows and drug as columns
   
-  require(dplyr)
-  require(tidyr)
   
   if (any(rownames(feature) != rownames(auc))) {
     auc = auc[rownames(feature), ]
   }
   
-  top = apply(feature, 2, sd) %>% sort(decreasing = T) %>% head(n=5000)
+  top = apply(feature, 2, sd) %>% sort(decreasing = T) %>% head(n=10000) # alex edit, select 10000
   feature = feature[, names(top)]
   
   feature_sig = list()
+  
   
   for (d in colnames(auc)) {
     
@@ -31,22 +30,23 @@ AnvSigNumFeature = function(feature, auc){
       feature_f = feature[, f] 
       feature_f = feature_f[names(auc_d)]
       
-      mod = lm(auc_d ~ feature_f)
+      #mod = lm(auc_d ~ feature_f)
+      mod = cor(auc_d, feature_f, use = "complete.obs")
       
-      if (dim(coef(summary(mod))) == c(2,4)){
-        p_val = coef(summary(mod))[2,4]
-        p_val_vec[f] = p_val
-      } else {
-        p_val_vec[f] = NA
-      }
-      
+      #if (dim(coef(summary(mod))) == c(2,4)){
+      #  p_val = coef(summary(mod))[2,4]
+      #  p_val_vec[f] = p_val
+      #} else {
+      #  p_val_vec[f] = NA
+      #}
+      p_val_vec[f] = mod
     }
     
-    p_val_vec = p.adjust(p_val_vec,"BH")
+    #p_val_vec = p.adjust(p_val_vec,"BH") unnnecesary if we just want the ordering
     p_val_vec = p_val_vec[order(p_val_vec)]
     
-    if (length(p_val_vec) > 100){
-      feature_sig[[d]] = names(head(p_val_vec, n=100))
+    if (length(p_val_vec) > 1000){
+      feature_sig[[d]] = names(head(p_val_vec, n=1000)) # alex edit, select 1000
     } else {
       feature_sig[[d]] = names(p_val_vec) # fixed a bug here
     }

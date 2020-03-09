@@ -52,18 +52,27 @@ test <- loadRData("features/drugs/drug_class.RData")
 
 
 
+
+library(dplyr)
+# dont forget make.names !
 #### VALIDATION PHASE
+
+rna_original <- read.csv("dream_data_leaderboard/rnaseq.csv",sep=",") #CHECK
 rna <- read.csv("features_validation/rna/rnaseq_full.csv", sep=",")
-row.names(rna) <- rna$Gene
+rownames<- rna$Gene
 rna <- rna[,-c(1,2)]
+rna <- sapply(rna, as.numeric)
+row.names(rna) = rownames
 rna <- t(rna)
 
+auc_original <- read.csv("dream_data_leaderboard/aucs.csv",sep=",")
 auc <- read.csv("features_validation/auc/aucs_full.csv", sep=",")
-auc <- auc[,-1]
+auc <- auc[,-1] #!!not in original data <-------------------------------------------------------------
 auc <- spread(data=auc, key=inhibitor, value=auc)
 row.names(auc) = make.names(auc$lab_id)
 auc <- auc[,-1]
 
+mut_original <- read.csv("dream_data_leaderboard/dnaseq.csv",sep=",") #CHECK
 mut <- read.csv("features_validation/mut/dnaseq_full.csv")
 mut$value <- 1
 mut <- mut[-c(576),]
@@ -74,7 +83,29 @@ mut <- mut[,-1]
 mut <- mut[, apply(mut, 2, sum) >= 4 ]
 
 
+clin_cat <- read.csv("dream_data_leaderboard/clinical_categorical.csv",sep=",") # Dream data
+clin_cat <- clin_cat %>% mutate_all(factor)
+row.names(clin_cat) <- make.names(clin_cat$lab_id)
+clin_cat <- clin_cat[,-1]
+clin_num <- read.csv("dream_data_leaderboard/clinical_numerical.csv")
+row.names(clin_num) <- make.names(clin_num$lab_id)
+clin_num <- clin_num[,-1]
+clin <- read.csv("features_validation/clinical_data/full_clinical_data.csv") # Engineered training data
+row.names(clin) = as.character(clin$b_id)
+clin <- clin[,-1]
+row.names.clin <- row.names(clin)
+clin <- clin %>% mutate_at(colnames(clin_cat), factor)
+row.names(clin) = make.names(row.names.clin)
+clin$treatment_stratification <- factor(clin$treatment_stratification)
+clin <- model.matrix(~., data=clin)
 
-save(rna, file = feature_path)
+resp <- read.csv("features_validation/survival/response_full.csv",sep=",")
+resp_original <- read.csv("dream_data_leaderboard/response.csv")
+resp <- resp[,-1] # not in original
+row.names(resp) = make.names(resp$lab_id)
+resp <- resp[,-1]
+resp$vitalStatus <- as.numeric(resp$vitalStatus)
+
+save(clin, file = feature_path)
 save(auc, file = response_path)
 

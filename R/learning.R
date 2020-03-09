@@ -10,6 +10,8 @@ suppressPackageStartupMessages({
   library(rjson)
   library(randomForest)
   library(caret)
+  library(tidyr)
+  library(survival)
 })
 # library(caret) not yet in image !!!
 
@@ -125,7 +127,6 @@ make_fit <- function(
   }
   
   feature_matrix_prestack <- feature_matrix
-  
   for(i in 1:length(folds$train_set)){ # for all folds
     
     ########PHONG METHOD
@@ -147,6 +148,7 @@ make_fit <- function(
       message(paste0("...for fold ",as.character(i)))
       message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
       message(paste0("...selected ",as.character(length(FILTER_FEATURE_NAMES[[j]]))," features..."))
+      
       
       y_name <- as.character(colnames(phenotype_matrix)[j])
       y_train <- (phenotype_matrix[folds$train_sets[[i]],j, drop=F])[!is.na(phenotype_matrix[folds$train_sets[[i]],j]),,drop = F]
@@ -288,6 +290,7 @@ make_fit_whole <- function(
   
   for(j in 1:ncol(phenotype_matrix)){
     message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
+    message(paste0("...selected ",as.character(length(FILTER_FEATURE_NAMES[[j]]))," features..."))
     for(i in 1:1){ # there is only one fold....
       
       if(stack){ #if model stacking, get the feature matrix for each drug seperately
@@ -310,7 +313,7 @@ make_fit_whole <- function(
       message(paste0("        Progress ",as.character(round(j/ncol(phenotype_matrix)*100)),"% !"))
       x_test <- NULL #feature_matrix[intersect,]
       y_test <- NULL #phenotype_matrix[ intersect ,j]
-      
+
       set.seed(seed)
       #######################METHOD
       if(method == "glm"){

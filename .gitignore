@@ -9,10 +9,8 @@ outputs/*
 metadata/*
 dream_data_leaderboard/
 .RData
-<<<<<<< HEAD
-features_validation/
-=======
->>>>>>> ece5dff57cbb162b285814d3b75aaeb83068529b
+features_validation/*
+submission/*
 
 !features/.gitkeep
 !metadata/.gitkeep

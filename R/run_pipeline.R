@@ -95,7 +95,7 @@ run_pipeline_final <- function(
   feature_path = NULL, # path to features
   response_path = NULL, # path to response
   submission = T,
-  FUN = function(x){return(x)}, # Function on feature set of training data, must return matrix of features (same names as input)
+  FUN =  function(x,y){res<-lapply(1:ncol(y),function(z) colnames(x));return(res)}, # Function on feature set of training data, must return matrix of features (same names as input)
   method = "glm",
   hyperparam = c("alpha"=0.5),
   stack = F
@@ -110,7 +110,8 @@ run_pipeline_final <- function(
   list_glm_whole <- make_fit_whole(feature_matrix = rna,
                                    phenotype_matrix = auc,
                                    method = method,
-                                   hyperparam = hyperparam)
+                                   hyperparam = hyperparam,
+                                   FUN = FUN)
 
   fit <- list()
   for(drug in 1:ncol(auc)){
