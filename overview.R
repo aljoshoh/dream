@@ -104,8 +104,40 @@ resp_original <- read.csv("dream_data_leaderboard/response.csv")
 resp <- resp[,-1] # not in original
 row.names(resp) = make.names(resp$lab_id)
 resp <- resp[,-1]
+resp$vitalStatus <- as.character(resp$vitalStatus)
+resp$vitalStatus[resp$vitalStatus == "Alive"] <- 1
+resp$vitalStatus[resp$vitalStatus == "Dead"] <- 0
 resp$vitalStatus <- as.numeric(resp$vitalStatus)
 
+
+
+
+directory <- "clin-surv"#"mut" #"rna"
+descriptor <- directory
+feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # path to features
+response_path = paste0("features/",directory,"/",descriptor,"_response.RData") # path to response
+feature_path
+response_path
+
 save(clin, file = feature_path)
-save(auc, file = response_path)
+save(resp, file = response_path)
+
+
+
+
+
+### DNN h2o offline prediction, should also work otherwise !
+
+model <- h2o.loadModel(final_model_list$param[[1]][[1]][[1]])
+modelfile <- h2o.download_mojo(model, path="metadata/h2odnn_pickle/", get_genmodel_jar=TRUE, genmodel_name = model@model_id)
+object <- as.h2o(rna[,final_model_list$gene_names_filtered[[1]]%>%unlist])
+h2o.saveModelDetails(object, path = "/storage/groups/cbm01/workspace/dream_aml/metadata/h2odnn_pickle/DeepLearning_model_R_1583746336351_1.json", force = F)
+
+
+h2o.predict_json(model = "/storage/groups/cbm01/workspace/dream_aml/metadata/h2odnn_pickle/DeepLearning_model_R_1583746336351_1.zip",
+                 genmodelpath = "/storage/groups/cbm01/workspace/dream_aml/metadata/h2odnn_pickle/DeepLearning_model_R_1583746336351_1",
+                 )
+
+
+
 

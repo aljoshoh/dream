@@ -12,7 +12,7 @@ rna <- rna[intersect(row.names(rna),row.names(auc)),]
 auc <- auc[intersect(row.names(rna),row.names(auc)),]
 print(dim(rna))
 print(dim(auc))
-descriptor <- "dnn"
+descriptor <- "cox"
 dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features.RData"))
 dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
 

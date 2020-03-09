@@ -20,9 +20,9 @@ print(paste0("Running with argument: ",as.character(args)))
 ##########################
 
 ### SCRIPT PARAMETER
-directory <- "rna-auc"#"mut" #"rna"
-descriptor <- "rf" # the descriptor means the method in this script, not the same as in PREPROCESS.R
-param <- list(c(NULL),c(NULL)) #list(c(333),c(500)) # c("alpha"=1.)
+directory <- "mut-surv"#"mut" #"rna"
+descriptor <- "cox" # the descriptor means the method in this script, not the same as in PREPROCESS.R
+param <- c("alpha"=1.) #list(c(NULL),c(NULL)) #list(c(333),c(500)) # c("alpha"=1.)
 ####################
 if(descriptor=="dnn"){h2o.init(port=8504)}
 models_list <- run_pipeline_benchmark(
@@ -35,9 +35,8 @@ models_list <- run_pipeline_benchmark(
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1,
-  args = args,
-  FUN = AnvSigNumFeature
-  
+  #FUN = AnvSigNumFeature,
+  args = args
 )
 save(models_list, file = paste0("outputs/",directory,"/",descriptor,"_default._10fold_cvseed1_instance",as.character(args),".RData")) # "_test"
 
@@ -57,9 +56,10 @@ if(FALSE){
   save(cv_models, file = paste0("outputs/",directory,"/",descriptor,"_default_cv.RData"))
   
   if(descriptor=="glm"){
-    lambda_min <- lambda_min(
+    lambda.min <- lambda_min(
       pipeline_object = cv_models # the object created from the pipeline object, only works if returnFit=F
     )
+    save(lambda.min, file =  paste0("outputs/",directory,"/",descriptor,"_default_lambda.min.RData"))
   }
   
   if(descriptor=="dnn"){h2o.init(port=8510)}
