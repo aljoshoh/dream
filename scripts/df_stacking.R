@@ -110,9 +110,10 @@ dump_features(stack_features, path = "features/stacked_models_sc1.RData")
 for(i in 1:length(stack_features)){
   colnames(stack_features[[i]]) = c("mut.glm","mut.rf","mut.dnn","rna.glm","rna.rf","rna.dnn","clin.glm","clin.rf","clin.dnn")
 }
-#dump_features(stack_features, path = "features/stacked_models_sc1_features.RData")
+dump_features(stack_features, path = "features/stacked_models_sc1_features.RData")
 auc_stack <- auc_rna[intsec,]
-#dump_features(auc_stack, path = "features/stacked_models_sc1_response.RData")
+dump_features(auc_stack, path = "features/stacked_models_sc1_response.RData")
+if(FALSE){
 models_list_stacked <- run_pipeline_benchmark( # does not work because of the CV-built being out of bounds !
   feature_path = "features/stacked_models_sc1_features.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
   response_path = "features/stacked_models_sc1_response.RData", # path to response
@@ -126,7 +127,7 @@ models_list_stacked <- run_pipeline_benchmark( # does not work because of the CV
   CVBuilt = modelsa$cv,
   stack = T
 )
-
+}
 
 models_list_stacked <- run_pipeline_final(
   feature_path = "features/stacked_models_sc1_features.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
@@ -137,7 +138,7 @@ models_list_stacked <- run_pipeline_final(
   stack = T
 )
 
-dump_features(models_list_stacked, path = "outputs/stacked_models_sc1_preliminary.RData")
+dump_features(models_list_stacked, path = "outputs/stacked_models_sc1.RData")
 
 
 

@@ -21,7 +21,7 @@ print(paste0("Running with argument: ",as.character(args)))
 
 ### SCRIPT PARAMETER
 directory <- "clin-auc"#"mut" #"rna"
-descriptor <- "dnn" # the descriptor means the method in this script, not the same as in PREPROCESS.R
+descriptor <- "rf" # the descriptor means the method in this script, not the same as in PREPROCESS.R
 param <- list(c(NULL),c(NULL)) #list(c(333),c(500)) # c("alpha"=1.)
 ####################
 if(descriptor=="dnn"){h2o.init(port=8506)}
