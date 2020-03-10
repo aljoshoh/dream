@@ -92,14 +92,10 @@ seed = F,
   # 2) predict on validation set
   survival.results <- predict.rfsrc(fit, newdata = Pred)
   # 3) calculate performance on validaiton set
-  Error <- survival.results$err.rate
+  Predicted <- survival.results$yvar
   
-  return (list(pred = survival.results, diff = NULL, fit = fit))
+  return (list(pred = Predicted, diff = NULL, fit = fit))
 }
-
-
-
-
 use_rf <- function(
   ### Random Forst
   ### TODO
