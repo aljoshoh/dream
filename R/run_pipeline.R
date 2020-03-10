@@ -111,7 +111,8 @@ run_pipeline_final <- function(
                                    phenotype_matrix = auc,
                                    method = method,
                                    hyperparam = hyperparam,
-                                   FUN = FUN)
+                                   FUN = FUN,
+                                   stack = stack)
 
   fit <- list()
   for(drug in 1:ncol(auc)){

@@ -77,7 +77,7 @@ auc_clin <- get_features(response_path)
 
 
 preds_stack <- list()
-for(y in 1:ncol(auc_rna)){  #1:ncol(auc)
+for(y in 1:ncol(auc_rna)){
   model1 <- unlist(lapply(1:length(modelsa$cv$test_sets), function(x) predict(modelsa$param[[x,y]][[1]], newx = mut[modelsa$cv$test_sets[[x]],], s = 'lambda.min')[,1]))
   model2 <- unlist(lapply(1:length(modelsb$cv$test_sets), function(x) predict(modelsb$param[[x,y]][[1]], newdata = mut[modelsb$cv$test_sets[[x]],])))
   model3 <- unlist(lapply(1:length(modelsc$cv$test_sets), function(x) predict(h2o.loadModel(modelsc$param[[x,y]][[1]]), newdata = as.h2o(mut[modelsc$cv$test_sets[[x]],]))%>%as.data.frame%>%unlist))
@@ -89,14 +89,14 @@ for(y in 1:ncol(auc_rna)){  #1:ncol(auc)
   model9 <- unlist(lapply(1:length(modelsi$cv$test_sets), function(x) predict(h2o.loadModel(modelsi$param[[x,y]][[1]]), newdata = as.h2o(clin[modelsi$cv$test_sets[[x]],]))%>%as.data.frame%>%unlist))
   intsec <- intersect(intersect(names(model1),names(model4)), names(model7))
   names(model3) = names(model1)
-  #names(model6) = names(model4)
+  names(model6) = names(model4)
   names(model9) = names(model7)
   temp <- cbind(model1[intsec], 
                 model2[intsec], 
                 model3[intsec],
                 model4[intsec],
-                #model5[intsec],
-                #model6[intsec],
+                model5[intsec],
+                model6[intsec],
                 model7[intsec],
                 model8[intsec],
                 model9[intsec]
@@ -107,9 +107,15 @@ for(y in 1:ncol(auc_rna)){  #1:ncol(auc)
 
 stack_features <- preds_stack
 dump_features(stack_features, path = "features/stacked_models_sc1.RData")
-models_list_stacked <- run_pipeline_benchmark(
-  feature_path = "features/stacked_models_sc1.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
-  response_path = paste0("features/",directory,"/",descriptor,"_response.RData"), # path to response
+for(i in 1:length(stack_features)){
+  colnames(stack_features[[i]]) = c("mut.glm","mut.rf","mut.dnn","rna.glm","rna.rf","rna.dnn","clin.glm","clin.rf","clin.dnn")
+}
+#dump_features(stack_features, path = "features/stacked_models_sc1_features.RData")
+auc_stack <- auc_rna[intsec,]
+#dump_features(auc_stack, path = "features/stacked_models_sc1_response.RData")
+models_list_stacked <- run_pipeline_benchmark( # does not work because of the CV-built being out of bounds !
+  feature_path = "features/stacked_models_sc1_features.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
+  response_path = "features/stacked_models_sc1_response.RData", # path to response
   submission = F,
   kfold = NULL, 
   method = "rf",
@@ -121,16 +127,17 @@ models_list_stacked <- run_pipeline_benchmark(
   stack = T
 )
 
+
 models_list_stacked <- run_pipeline_final(
-  feature_path = "features/stacked_models_sc1.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
-  response_path = paste0("features/",directory,"/",descriptor,"_response.RData"), # path to response
+  feature_path = "features/stacked_models_sc1_features.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
+  response_path = "features/stacked_models_sc1_response.RData", # path to response
   submission = T,
   method = "rf",
   hyperparam = list(c(NULL),c(NULL)), #c("alpha"=0.5), #list(c(333),c(500)), # c("alpha"=0.5),
   stack = T
 )
 
-dump_features(models_list_stacked, path = "outputs/stacked_models_sc1.RData")
+dump_features(models_list_stacked, path = "outputs/stacked_models_sc1_preliminary.RData")
 
 
 

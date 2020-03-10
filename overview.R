@@ -71,6 +71,10 @@ auc <- auc[,-1] #!!not in original data <---------------------------------------
 auc <- spread(data=auc, key=inhibitor, value=auc)
 row.names(auc) = make.names(auc$lab_id)
 auc <- auc[,-1]
+auc <- auc[,apply(auc,2, function(x) length(which(is.na(x)))) < 60]
+auc <- auc[apply(auc,1, function(x) length(which(is.na(x)))) < 20,]
+auc[] <- auc %>% mutate_all(function(x) impute(x))                       # only for the survival prediction !
+
 
 mut_original <- read.csv("dream_data_leaderboard/dnaseq.csv",sep=",") #CHECK
 mut <- read.csv("features_validation/mut/dnaseq_full.csv")
@@ -97,6 +101,7 @@ row.names.clin <- row.names(clin)
 clin <- clin %>% mutate_at(colnames(clin_cat), factor)
 row.names(clin) = make.names(row.names.clin)
 clin$treatment_stratification <- factor(clin$treatment_stratification)
+clin <- clin[,-ncol(clin)]
 clin <- model.matrix(~., data=clin)
 
 resp <- read.csv("features_validation/survival/response_full.csv",sep=",")
@@ -113,14 +118,14 @@ resp <- resp[resp$overallSurvival != 0,]
 
 
 
-directory <- "clin-surv"#"mut" #"rna"
+directory <- "clin-auc"#"mut" #"rna"
 descriptor <- directory
 feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # path to features
 response_path = paste0("features/",directory,"/",descriptor,"_response.RData") # path to response
 feature_path
 response_path
 
-#save(clin, file = feature_path)
+save(clin, file = feature_path)
 save(resp, file = response_path)
 
 

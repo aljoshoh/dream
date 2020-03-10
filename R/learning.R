@@ -12,6 +12,8 @@ suppressPackageStartupMessages({
   library(caret)
   library(tidyr)
   library(survival)
+  library(Hmisc)
+  library(randomForestSRC)
 })
 # library(caret) not yet in image !!!
 
@@ -197,6 +199,14 @@ make_fit <- function(
                         seed = seed
         )
       }
+      
+      if(method == "survrf"){
+        model <- use_rfSurvival(x_train, y_train, x_test, y_test,
+                                hyperparam = hyperparam,
+                                y_name = y_name,
+                                seed = seed
+        )
+      }
       ############################
       mse <- mean(model$diff*model$diff)
       if(method != "cox"){
@@ -254,7 +264,11 @@ make_fit_whole <- function(
 ){
   if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}
   if(!is.matrix(phenotype_matrix)){stop("The feature matrix is not a numerical matrix !")}
-  intersect <- intersect(row.names(feature_matrix), row.names(phenotype_matrix))
+  if(!stack){
+    intersect <- intersect(row.names(feature_matrix), row.names(phenotype_matrix))
+  }else{
+    intersect <- intersect(row.names(feature_matrix[[1]]), row.names(phenotype_matrix)) #[[1]] just as a test
+  }
   
   message("Initialize Method ...")
   if(method %in% c("dnn")){
@@ -291,20 +305,20 @@ make_fit_whole <- function(
   
   for(j in 1:ncol(phenotype_matrix)){
     message(paste0("...for drug ", as.character(colnames(phenotype_matrix)[j])))
-    message(paste0("...selected ",as.character(length(FILTER_FEATURE_NAMES[[j]]))," features..."))
     for(i in 1:1){ # there is only one fold....
       
       if(stack){ #if model stacking, get the feature matrix for each drug seperately
         feature_matrix <- feature_matrix_prestack[[j]]
         FILTER_FEATURE_NAMES <- lapply(1:ncol(phenotype_matrix), function(x) colnames(feature_matrix))
       }
+      message(paste0("...selected ",as.character(length(FILTER_FEATURE_NAMES[[j]]))," features..."))
       
       #message(paste0("...for fold ",as.character(i)))
       y_name <- as.character(colnames(phenotype_matrix)[j])
       y_train <- (phenotype_matrix[intersect,j, drop=F])[!is.na(phenotype_matrix[intersect,j]),,drop = F]
       
       if(method == "cox"){ ### HACK-BUGFIX, cause of removing the NA from the phenotype data in the line above
-        x_train <- feature_matrix[intersect,FILTER_FEATURE_NAMES]
+        x_train <- feature_matrix[intersect,FILTER_FEATURE_NAMES[[j]]]
       } else {
         x_train <- feature_matrix[names(y_train[,y_name]),FILTER_FEATURE_NAMES[[j]]]
       }
@@ -346,6 +360,14 @@ make_fit_whole <- function(
                         hyperparam = hyperparam,
                         y_name = as.character(colnames(phenotype_matrix)[j]),
                         seed = seed
+        )
+      }
+      
+      if(method == "survrf"){
+        model <- use_rfSurvival(x_train, y_train, x_test, y_test,
+                         hyperparam = hyperparam,
+                         y_name = y_name,
+                         seed = seed
         )
       }
       #######################METHOD

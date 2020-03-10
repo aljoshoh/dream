@@ -76,19 +76,26 @@ use_cox <- function(
   return(list(pred=pred, diff=diff, fit=fit))
 }######################################################
 
-use_rfSurvival <- function(x_train=x_train,
-y_train=y_train,
-x_test=x_test,
-y_test=y_test,
-hyperparam=hyperparam,
-y_name=y_name,
-seed = F,
-) {
-  Train <- as.data.frame(t(rbind(x_train, y_train)))
-  Pred <-as.data.frame(t(rbind(x_test, y_test)))
+
+
+use_rfSurvival <- function(
+  x_train=x_train,
+  y_train=y_train,
+  x_test=x_test,
+  y_test=y_test,
+  hyperparam=hyperparam,
+  y_name=y_name,
+  seed = F
+){
+  Train <- as.data.frame(cbind(x_train, y_train))
+  Pred <-as.data.frame(cbind(x_test, y_test))
+  
+  if(is.null(hyperparam[[1]]) & is.null(hyperparam[[2]])){
+    hyperparam <- list(c(ncol(x_train)/3),c(500))  # here the hyperparams are feeded
+  }
   
   # 1) train model
-  fit <- rfsrc(Surv(overallSurvival, vitalStatus) ~ .,data = Train, ntree=hyperparam$mtree, mtry =hyperparam$mtry, splitrule ='logrank')
+  fit <- rfsrc(Surv(overallSurvival, vitalStatus) ~ .,data = Train, ntree=hyperparam[[2]], mtry =hyperparam[[1]], splitrule ='logrank')
   # 2) predict on validation set
   survival.results <- predict.rfsrc(fit, newdata = Pred)
   # 3) calculate performance on validaiton set
