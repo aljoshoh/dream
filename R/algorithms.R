@@ -100,7 +100,7 @@ use_rfSurvival <- function(
   if(!is.null(x_test)){
     survival.results <- predict.rfsrc(fit, newdata = Pred)
     # 3) calculate performance on validaiton set
-    Predicted <- survival.results$yvar
+    Predicted <- survival.results$predicted
   }else{
     Predicted <- NULL
   }
