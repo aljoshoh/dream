@@ -1,7 +1,7 @@
 numberofargs <- 1 # if sequential, set to 1
 ###############
 
-directory <- "clin-auc"#"mut" #"rna"
+directory <- "auc-surv"#"mut" #"rna"
 descriptor <- directory
 feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # path to features
 response_path = paste0("features/",directory,"/",descriptor,"_response.RData") # path to response
@@ -12,7 +12,7 @@ rna <- rna[intersect(row.names(rna),row.names(auc)),]
 auc <- auc[intersect(row.names(rna),row.names(auc)),]
 print(dim(rna))
 print(dim(auc))
-descriptor <- "dnn" #method #"coxrf"
+descriptor <- "rfsurv" #method #"coxrf"
 dump_features(rna, path = paste0("features/",directory,"/",descriptor,"_features.RData"))
 dump_features(auc, path = paste0("features/",directory,"/",descriptor,"_response.RData"))
 

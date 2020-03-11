@@ -95,11 +95,15 @@ use_rfSurvival <- function(
   }
   
   # 1) train model
-  fit <- rfsrc(Surv(overallSurvival, vitalStatus) ~ .,data = Train, ntree=hyperparam[[2]], mtry =hyperparam[[1]], splitrule ='logrank')
+  fit <- rfsrc(x ~ .,data = Train, ntree=hyperparam[[2]], mtry =hyperparam[[1]])
   # 2) predict on validation set
-  survival.results <- predict.rfsrc(fit, newdata = Pred)
-  # 3) calculate performance on validaiton set
-  Predicted <- survival.results$yvar
+  if(!is.null(x_test)){
+    survival.results <- predict.rfsrc(fit, newdata = Pred)
+    # 3) calculate performance on validaiton set
+    Predicted <- survival.results$yvar
+  }else{
+    Predicted <- NULL
+  }
   
   return (list(pred = Predicted, diff = NULL, fit = fit))
 }

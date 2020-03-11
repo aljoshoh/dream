@@ -122,7 +122,7 @@ make_fit <- function(
   gene_names_filtered <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
   param <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
   
-  if(method == "cox"){ # Cox needs special treatment, this puts the data-matrix back to a single column
+  if(method %in% c("rfsurv","cox")){ # Cox needs special treatment, this puts the data-matrix back to a single column
     survival <- as.data.frame(Surv(event = phenotype_matrix[,1], time = phenotype_matrix[,2]))
     row.names(survival) <- row.names(phenotype_matrix)
     phenotype_matrix <- survival
@@ -156,7 +156,7 @@ make_fit <- function(
 
       y_train <- (phenotype_matrix[folds$train_sets[[i]],j, drop=F])[!is.na(phenotype_matrix[folds$train_sets[[i]],j]),,drop = F]
       
-      if(method == "cox"){ ### HACK-BUGFIX, cause of removing the NA from the phenotype data in the line above
+      if(method %in% c("rfsurv","cox")){ ### HACK-BUGFIX, cause of removing the NA from the phenotype data in the line above
         x_train <- feature_matrix[folds$train_sets[[i]],FILTER_FEATURE_NAMES[[j]]] # add different for each drug
       } else {
         x_train <- feature_matrix[names(y_train[,y_name]),FILTER_FEATURE_NAMES[[j]]] # add different for each drug
@@ -200,7 +200,7 @@ make_fit <- function(
         )
       }
       
-      if(method == "survrf"){
+      if(method == "rfsurv"){
         model <- use_rfSurvival(x_train, y_train, x_test, y_test,
                                 hyperparam = hyperparam,
                                 y_name = y_name,
@@ -209,7 +209,7 @@ make_fit <- function(
       }
       ############################
       mse <- mean(model$diff*model$diff)
-      if(method != "cox"){
+      if(!(method %in% c("rfsurv","cox"))){
         cor <- cor(model$pred, y_test, use = "complete.obs", method = "spearman")
         score[i,j] <- cor
       } else {
@@ -280,7 +280,7 @@ make_fit_whole <- function(
   param <- as.data.frame(matrix(NA,nrow = 1, ncol = ncol(phenotype_matrix)))
   gene_names_filtered <- as.data.frame(matrix(NA,nrow = 1, ncol = ncol(phenotype_matrix)))
   
-  if(method == "cox"){ # Cox needs special treatment, this puts the data-matrix back to a single column
+  if(method %in% c("cox","rfsurv")){ # Cox needs special treatment, this puts the data-matrix back to a single column
     survival <- as.data.frame(Surv(event = phenotype_matrix[,1], time = phenotype_matrix[,2]))
     row.names(survival) <- row.names(phenotype_matrix)
     phenotype_matrix <- survival
@@ -317,7 +317,7 @@ make_fit_whole <- function(
       y_name <- as.character(colnames(phenotype_matrix)[j])
       y_train <- (phenotype_matrix[intersect,j, drop=F])[!is.na(phenotype_matrix[intersect,j]),,drop = F]
       
-      if(method == "cox"){ ### HACK-BUGFIX, cause of removing the NA from the phenotype data in the line above
+      if(method %in% c("cox","rfsurv")){ ### HACK-BUGFIX, cause of removing the NA from the phenotype data in the line above
         x_train <- feature_matrix[intersect,FILTER_FEATURE_NAMES[[j]]]
       } else {
         x_train <- feature_matrix[names(y_train[,y_name]),FILTER_FEATURE_NAMES[[j]]]
@@ -363,7 +363,7 @@ make_fit_whole <- function(
         )
       }
       
-      if(method == "survrf"){
+      if(method == "rfsurv"){
         model <- use_rfSurvival(x_train, y_train, x_test, y_test,
                          hyperparam = hyperparam,
                          y_name = y_name,

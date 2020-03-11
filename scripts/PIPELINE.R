@@ -20,11 +20,11 @@ print(paste0("Running with argument: ",as.character(args)))
 ##########################
 
 ### SCRIPT PARAMETER
-directory <- "clin-auc"#"mut" #"rna"
-descriptor <- "rf" # the descriptor means the method in this script, not the same as in PREPROCESS.R
+directory <- "rna-surv"#"mut" #"rna"
+descriptor <- "rfsurv" # the descriptor means the method in this script, not the same as in PREPROCESS.R
 param <- list(c(NULL),c(NULL)) #list(c(333),c(500)) # c("alpha"=1.)
 ####################
-if(descriptor=="dnn"){h2o.init(port=8506)}
+if(descriptor=="dnn"){h2o.init(port=8508)}
 models_list <- run_pipeline_benchmark(
   feature_path = paste0("features/",directory,"/",descriptor,"_features.RData"), # path to features
   response_path = paste0("features/",directory,"/",descriptor,"_response_",as.character(args),".RData"), # path to response
@@ -35,7 +35,7 @@ models_list <- run_pipeline_benchmark(
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = 1,
-  FUN = AnvSigNumFeature,#AnvSigSurvFeature,
+  FUN = AnvSigSurvFeature,
   args = args
 )
 save(models_list, file = paste0("outputs/",directory,"/",descriptor,"_default._10fold_cvseed1_instance",as.character(args),".RData"))
@@ -69,7 +69,7 @@ if(FALSE){
     submission = T,
     method = descriptor,
     hyperparam = param,
-    FUN = AnvSigNumFeature #AnvSigSurvFeature
+    FUN = AnvSigSurvFeature #AnvSigSurvFeature
   )
   
   save(final_model_list, file = paste0("outputs/",directory,"/",descriptor,"_default.RData"))
