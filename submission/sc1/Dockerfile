@@ -13,7 +13,8 @@ RUN apt-get update -qq && apt-get -y --no-install-recommends install \
 
 ## Install R packages in Docker image
 RUN echo "r <- getOption('repos'); r['CRAN'] <- 'http://cran.us.r-project.org'; options(repos = r);" > ~/.Rprofile
-RUN Rscript -e "install.packages(c('tidyr','dplyr','randomForest','glmnet','survival','h2o','Hmisc','readr','randomForestSRC'))"
+RUN Rscript -e "install.packages(c('tidyr','dplyr','randomForest','glmnet','survival','Hmisc','readr','randomForestSRC','caret'))"
+RUN Rscript -e "install.packages('https://cran.r-project.org/src/contrib/Archive/h2o/h2o_3.26.0.2.tar.gz', repos=NULL, type='source')"
 
 ## Copy run_model.R, models folder, input_data_functions.R & general.R into Docker image
 COPY . /home/

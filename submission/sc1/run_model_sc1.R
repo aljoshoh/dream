@@ -1,11 +1,15 @@
-library(tidyr)
-library(dplyr)
-library(randomForest)
-library(survival)
-library(glmnet)
-library(h2o)
-library(readr)
-library(Hmisc)
+suppressPackageStartupMessages({
+  library(tidyr)
+  library(dplyr)
+  library(randomForest)
+  library(survival)
+  library(glmnet)
+  library(h2o)
+  library(readr)
+  library(Hmisc)
+  library(caret)
+  library(glmnet)
+})
 
 source("/home/input_data_functions.R") ### alex bug fix, was no absolute path
 source("/home/general.R")
@@ -50,7 +54,7 @@ for (i in 1:length(inhibitor_name)){
   mod_clin_dnn$param[[i]][[1]][[1]] = convert_path(path = PATH, path.in.object = mod_clin_dnn$param[[i]][[1]][[1]])
 
   predict_rna_glm = predict(mod_rna_glm$param[[i]][[1]][[1]], rna[,mod_rna_glm$gene_names_filtered[[i]] %>% unlist], s = lambda_rna)
-  predict_rna_dnn = predict(h2o.loadModel(mod_rna_dnn$param[[i]][[1]][[1]]), newdata = as.h2o(rna[,mod_rna_dnn$gene_names_filtered[[i]] %>% unlist])) %>% as.data.frame%>%unlist
+  sess
   names(predict_rna_dnn) = rownames(rna)
   predict_rna_rf = predict(mod_rna_rf$param[[i]][[1]][[1]], rna[,mod_rna_rf$gene_names_filtered[[i]] %>% unlist])
   predict_mut_glm = predict(mod_mut_glm$param[[i]][[1]][[1]], mut[,mod_mut_glm$gene_names_filtered[[i]] %>% unlist], s = lambda_mut)
