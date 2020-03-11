@@ -92,7 +92,7 @@ seed = F,
   # 2) predict on validation set
   survival.results <- predict.rfsrc(fit, newdata = Pred)
   # 3) calculate performance on validaiton set
-  Predicted <- survival.results$yvar
+  Predicted <- survival.results$predicted
   
   return (list(pred = Predicted, diff = NULL, fit = fit))
 }
