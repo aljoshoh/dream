@@ -209,6 +209,8 @@ make_fit <- function(
       }
       ############################
       mse <- mean(model$diff*model$diff)
+      print(model$pred)
+      print(y_test)
       if(!(method %in% c("rfsurv","cox"))){
         cor <- cor(model$pred, y_test, use = "complete.obs", method = "spearman")
         score[i,j] <- cor

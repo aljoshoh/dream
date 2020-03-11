@@ -87,15 +87,17 @@ use_rfSurvival <- function(
   y_name=y_name,
   seed = F
 ){
+  y_train <- as.matrix(y_train)
+  
   Train <- as.data.frame(cbind(x_train, y_train))
   Pred <-as.data.frame(cbind(x_test, y_test))
   
   if(is.null(hyperparam[[1]]) & is.null(hyperparam[[2]])){
     hyperparam <- list(c(ncol(x_train)/3),c(500))  # here the hyperparams are feeded
   }
-  
+
   # 1) train model
-  fit <- rfsrc(x ~ .,data = Train, ntree=hyperparam[[2]], mtry =hyperparam[[1]])
+  fit <- rfsrc(Surv(time = x.time, event = x.status) ~ .,data = Train, ntree=hyperparam[[2]], mtry =hyperparam[[1]], splitrule = "logrank")
   # 2) predict on validation set
   if(!is.null(x_test)){
     survival.results <- predict.rfsrc(fit, newdata = Pred)
@@ -104,7 +106,6 @@ use_rfSurvival <- function(
   }else{
     Predicted <- NULL
   }
-  
   return (list(pred = Predicted, diff = NULL, fit = fit))
 }
 use_rf <- function(
