@@ -30,6 +30,8 @@ mod_clin_rf  <- loadRData("/home/models/clin-auc/rf_default.RData")
 
 inhibitor_name <- loadRData("/home/drug_names.RData")
 
+stacked_models <- loadRData("/home/models/stacked_models_sc1.RData")
+
 lambda.min_rna <- loadRData("/home/models/rna-auc/glm_default_lambda.min.RData")
 lambda.min_mut <- loadRData("/home/models/mut-auc/glm_default_lambda.min.RData")
 lambda.min_clin <- loadRData("/home/models/clin-auc/glm_default_lambda.min.RData")
@@ -54,15 +56,18 @@ for (i in 1:length(inhibitor_name)){
   mod_clin_dnn$param[[i]][[1]][[1]] = convert_path(path = PATH, path.in.object = mod_clin_dnn$param[[i]][[1]][[1]])
 
   predict_rna_glm = predict(mod_rna_glm$param[[i]][[1]][[1]], rna[,mod_rna_glm$gene_names_filtered[[i]] %>% unlist], s = lambda_rna)
-  sess
+  predict_rna_dnn = predict(h2o.loadModel(mod_rna_dnn$param[[i]][[1]][[1]]), 
+                            newdata = as.h2o(rna[,mod_rna_dnn$gene_names_filtered[[i]] %>% unlist])) %>% as.data.frame%>%unlist
   names(predict_rna_dnn) = rownames(rna)
   predict_rna_rf = predict(mod_rna_rf$param[[i]][[1]][[1]], rna[,mod_rna_rf$gene_names_filtered[[i]] %>% unlist])
   predict_mut_glm = predict(mod_mut_glm$param[[i]][[1]][[1]], mut[,mod_mut_glm$gene_names_filtered[[i]] %>% unlist], s = lambda_mut)
-  predict_mut_dnn = predict(h2o.loadModel(mod_mut_dnn$param[[i]][[1]][[1]]), newdata = as.h2o(mut[,mod_mut_dnn$gene_names_filtered[[i]] %>% unlist])) %>% as.data.frame%>%unlist
+  predict_mut_dnn = predict(h2o.loadModel(mod_mut_dnn$param[[i]][[1]][[1]]), 
+                            newdata = as.h2o(mut[,mod_mut_dnn$gene_names_filtered[[i]] %>% unlist])) %>% as.data.frame%>%unlist
   names(predict_mut_dnn) = rownames(mut)
   predict_mut_rf = predict(mod_mut_rf$param[[i]][[1]][[1]], mut[,mod_mut_rf$gene_names_filtered[[i]] %>% unlist])
   predict_clin_glm = predict(mod_clin_glm$param[[i]][[1]][[1]], clin[,mod_clin_glm$gene_names_filtered[[i]] %>% unlist], s = lambda_clin)
-  predict_clin_dnn = predict(h2o.loadModel(mod_clin_dnn$param[[i]][[1]][[1]]), newdata = as.h2o(clin[,mod_clin_glm$gene_names_filtered[[i]] %>% unlist])) %>% as.data.frame%>%unlist
+  predict_clin_dnn = predict(h2o.loadModel(mod_clin_dnn$param[[i]][[1]][[1]]), 
+                             newdata = as.h2o(clin[,mod_clin_glm$gene_names_filtered[[i]] %>% unlist])) %>% as.data.frame%>%unlist
   names(predict_clin_dnn) = rownames(clin)
   predict_clin_rf = predict(mod_clin_rf$param[[i]][[1]][[1]], clin[,mod_clin_rf$gene_names_filtered[[i]] %>% unlist])
 
@@ -81,8 +86,10 @@ final_predict_vec = unlist(final_predict)
 final_predict_df = data.frame(identifier = names(final_predict_vec), auc = final_predict_vec,
                               row.names = NULL) %>%
   separate(col = identifier, into = c("inhibitor", "lab_id1", "labid2"), sep = "\\.") %>%
-  unite(col = "labid", 2:3, sep = ".")
+  unite(col = "lab_id", 2:3, sep = ".")
   
-
+final_predict_df$lab_id <- unlist(lapply(final_predict_df$lab_id, function(x) gsub("X","",x)))
+final_predict_df$lab_id <- unlist(lapply(final_predict_df$lab_id, function(x) gsub("\\.","-",x)))
+final_predict_df <- final_predict_df[,c("lab_id","inhibitor","auc")]
 write.csv(final_predict_df, "/output/predictions.csv", row.names = F)
 
