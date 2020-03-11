@@ -82,10 +82,10 @@ surv_clin <- get_features(response_path)
 
 preds_stack <- list()
 for(y in 1:1){ 
-  model1 <- unlist(lapply(1:length(modelsa$cv$test_sets), function(x) predict.rfsrc(modelsa$param[[x,y]][[1]], newx = mut[modelsa$cv$test_sets[[x]],], s = 'lambda.min')[,1]))
-  model2 <- unlist(lapply(1:length(modelsb$cv$test_sets), function(x) predict(modelsb$param[[x,y]][[1]], newx = rna[modelsb$cv$test_sets[[x]],modelsb$gene_names_filtered[[x,y]][[1]]], s = 'lambda.min')[,1]))
-  model3 <- unlist(lapply(1:length(modelsc$cv$test_sets), function(x) predict(modelsc$param[[x,y]][[1]], newx = clin[modelsc$cv$test_sets[[x]],], s = 'lambda.min')[,1]))
-  model4 <- unlist(lapply(1:length(modelsd$cv$test_sets), function(x) predict.coxph(modelsd$param[[x,y]][[1]], newx = auc[modelsd$cv$test_sets[[x]],], s = 'lambda.min')[,1]))
+  model1 <- unlist(lapply(1:length(modelsa$cv$test_sets), function(x){ tmp<-predict.rfsrc(modelsa$param[[x,y]][[1]], newdata = as.data.frame(mut[modelsa$cv$test_sets[[x]],]))$predicted; names(tmp)=row.names(mut[modelsa$cv$test_sets[[x]],]); return(tmp)}))
+  model2 <- unlist(lapply(1:length(modelsb$cv$test_sets), function(x){ tmp<-predict.rfsrc(modelsb$param[[x,y]][[1]], newdata = as.data.frame(rna[modelsb$cv$test_sets[[x]],]))$predicted; names(tmp)=row.names(rna[modelsb$cv$test_sets[[x]],]); return(tmp)}))
+  model3 <- unlist(lapply(1:length(modelsc$cv$test_sets), function(x){ tmp<-predict.rfsrc(modelsc$param[[x,y]][[1]], newdata = as.data.frame(clin[modelsc$cv$test_sets[[x]],]))$predicted; names(tmp)=row.names(clin[modelsc$cv$test_sets[[x]],]); return(tmp)}))
+  model4 <- unlist(lapply(1:length(modelsd$cv$test_sets), function(x){ tmp<-predict.rfsrc(modelsd$param[[x,y]][[1]], newdata = as.data.frame(auc[modelsd$cv$test_sets[[x]],]))$predicted; names(tmp)=row.names(auc[modelsd$cv$test_sets[[x]],]); return(tmp)}))
   intsec <- intersect(intersect(intersect(names(model1),names(model2)), names(model3)), names(model4))
   temp <- cbind(model1[intsec], 
                 model2[intsec], 
@@ -112,7 +112,7 @@ models_list_stacked <- run_pipeline_benchmark(
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = NULL, # supply the parallel processing counter
-  CVBuilt = modelsa$cv,
+  #CVBuilt = modelsa$cv,
   stack = T
 )
 

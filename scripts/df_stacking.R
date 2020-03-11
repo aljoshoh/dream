@@ -118,13 +118,13 @@ models_list_stacked <- run_pipeline_benchmark( # does not work because of the CV
   feature_path = "features/stacked_models_sc1_features.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
   response_path = "features/stacked_models_sc1_response.RData", # path to response
   submission = F,
-  kfold = NULL, 
+  kfold = 10, 
   method = "rf",
   hyperparam = list(c(NULL),c(NULL)), #c("alpha"=0.5), #list(c(333),c(500)), # c("alpha"=0.5),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
   cvseed = NULL, # supply the parallel processing counter
-  CVBuilt = modelsa$cv,
+  #CVBuilt = modelsa$cv,
   stack = T
 )
 }

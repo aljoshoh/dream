@@ -34,7 +34,7 @@ run_pipeline_benchmark <- function(
     message("Using CV-Built !")
     CV <- CVBuilt
   } else {
-    CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = kfold, seed = cvseed)
+    CV <- cv(feature_matrix = rna, phenotype_matrix = auc, kfold = kfold, seed = cvseed, stack = stack)
   }
   
   list_glm <- make_fit(feature_matrix = rna, phenotype_matrix = auc, folds = CV,

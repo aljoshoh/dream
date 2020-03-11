@@ -54,14 +54,32 @@ cv <- function(
   feature_matrix = NULL, # Numerical feature matrix
   phenotype_matrix = NULL, # Numerical pheontype matrix 
   kfold = 5, # How many folds
-  seed = 123 # Setting a fixed seed
+  seed = 123, # Setting a fixed seed
+  stack = F
 ){
-  if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}
-  if(!is.matrix(phenotype_matrix)){stop("The phenotype matrix is not a numerical matrix !")}
+  #if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}   #<<<<--------------------------------- if error, check if this still runs without model stacking
+  #if(!is.matrix(phenotype_matrix)){stop("The phenotype matrix is not a numerical matrix !")}
+  if(!stack){
+    if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}
+    if(!is.matrix(phenotype_matrix)){stop("The feature matrix is not a numerical matrix !")}
+  } else {
+    if(!is.list(feature_matrix)){stop("The feature matrix is not a list for model stacking !")}
+  }
   message("Check for matched row names...")
-  if(!is.null(phenotype_matrix)){
+  
+  if(!is.null(phenotype_matrix) & !stack){
     feature_matrix <- feature_matrix[intersect(row.names(feature_matrix), row.names(phenotype_matrix)),]
     phenotype_matrix <- phenotype_matrix[intersect(row.names(feature_matrix), row.names(phenotype_matrix)),]
+  }
+  
+  if(stack){ # For each of the feature dfs in the stacking list, align the samples:
+    aligned <- c()
+    for(i in 1:length(feature_matrix)){
+      feature_matrix[[i]] <- feature_matrix[intersect(row.names(feature_matrix[[i]]), row.names(phenotype_matrix)),]
+      phenotype_matrix <- phenotype_matrix[intersect(row.names(feature_matrix), row.names(phenotype_matrix)),]
+      print(dim(feature_matrix[[i]]))
+      print(dim(phenotype_matrix[[i]]))
+    }
   }
   
   message(paste0("Feature matrix is of dimension ",as.character(nrow(feature_matrix)),"x",as.character(ncol(feature_matrix))," !"))
@@ -216,7 +234,7 @@ make_fit <- function(
         score[i,j] <- cor
       } else {
         score <- as.data.frame(score)
-        cor <- list(model$pred)
+        cor <- list(cbind(model$pred,as.matrix(y_test)))
         score[[i,j]] <- cor
       }
       

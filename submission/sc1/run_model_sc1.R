@@ -7,8 +7,8 @@ library(h2o)
 library(readr)
 library(Hmisc)
 
-source("home/input_data_functions.R")
-source("home/general.R")
+source("/home/input_data_functions.R") ### alex bug fix, was no absolute path
+source("/home/general.R")
 
 rna <- import_rnaseq("/input/rnaseq.csv")
 mut <- import_dnaseq("/input/dnaseq.csv")
