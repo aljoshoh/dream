@@ -226,14 +226,15 @@ make_fit <- function(
       }
       ############################
       mse <- mean(model$diff*model$diff)
-      print(model$pred)
-      print(y_test)
+      
       if(!(method %in% c("rfsurv","cox"))){
         cor <- cor(model$pred, y_test, use = "complete.obs", method = "spearman")
         score[i,j] <- cor
       } else {
-        score <- as.data.frame(score)
-        cor <- list(cbind(model$pred,as.matrix(y_test)))
+        ground <- as.data.frame(as.matrix(y_test))
+        s <- cbind(model$pred, ground)
+        cor <- concordance.index(x=s[,1], surv.time=s[,2], surv.event=s[,3])$c.index # concordance index
+        print(cor)
         score[[i,j]] <- cor
       }
       

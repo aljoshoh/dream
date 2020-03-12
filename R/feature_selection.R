@@ -179,3 +179,10 @@ AnvSigSurvFeature = function(feature, auc){
   return(feature_sig)
   
 }
+
+
+genesets_survival = function(feature, auc){
+set <- loadRData("features/rna-surv/GeneSets_survival.RData")$Genes
+return(NULL)
+}
+

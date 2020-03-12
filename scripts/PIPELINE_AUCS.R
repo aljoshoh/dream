@@ -16,41 +16,32 @@ source("R/general.R")
 
 #### how to run on cluster
 # ./SUBMIT.sh PIPELINE.R numberofargs 1
-#args <- args[1] #<- new command 
+args <- args[1] #<- new command 
 print(paste0("Running with argument: ",as.character(args)))
 ##########################
 
 ### SCRIPT PARAMETER
-directory <- "mut-surv"#"mut" #"rna"
+directory <- "clin-surv"#"mut" #"rna"
 descriptor <- "rfsurv" # the descriptor means the method in this script, not the same as in PREPROCESS.R
-
-mtry <- seq(from= 1, to= 100, by= 10) #rna:seq(from= 1, to= 1000, by= 10) #clin:seq(from= 1, to= 100, by= 2)
-ntree <- seq(from=10, to= 5000, by = 100)
-combos <- expand.grid(mtry, ntree)
-combos_local <- combos#combos[(10*args-9):(10*args),]
+param <- list(c(NULL),c(NULL)) #list(c(333),c(500)) # c("alpha"=1.)
 ####################
 if(descriptor=="dnn"){h2o.init(port=8508)}
-cvscore <- c()
-for(i in 1:nrow(combos_local)){
-  param <- list(c(combos_local[i,1]),c(combos_local[i,2])) 
-  models_list <- run_pipeline_benchmark(
-    feature_path = paste0("features/",directory,"/",descriptor,"_features.RData"), # path to features
-    response_path = paste0("features/",directory,"/",descriptor,"_response_",as.character(1),".RData"), # path to response, all the same for survival
-    submission = T,
-    kfold = 10, 
-    method = c(descriptor),
-    hyperparam = param,
-    cvglm = T,
-    returnFit = T, # if false, then it only returns the lambda
-    cvseed = 1, #CV-seed for tuning was set to 1, setting 2 for creating the stacking features !
-    FUN = AnvSigSurvFeature,
-    args = args
-  )
-  cvscore[i] <- mean(unlist(models_list$score), na.rm=T)
-  print(i/nrow(combos)*100)
-}
-save(cvscore, file = paste0("outputs/",directory,"/tuning/",descriptor,"_performance_10fold_cvseed1_instance",as.character(args),".RData"))
-#save(models_list, file = paste0("outputs/",directory,"/",descriptor,"_default._10fold_cvseed1_instance",as.character(args),".RData"))
+models_list <- run_pipeline_benchmark(
+  feature_path = paste0("features/",directory,"/",descriptor,"_features.RData"), # path to features
+  response_path = paste0("features/",directory,"/",descriptor,"_response_",as.character(args),".RData"), # path to response
+  submission = T,
+  kfold = 10, 
+  method = c(descriptor),
+  hyperparam = param,
+  cvglm = T,
+  returnFit = T, # if false, then it only returns the lambda
+  cvseed = 1,
+  FUN = AnvSigSurvFeature,
+  args = args
+)
+models_list$cvscore <- mean(unlist(models_list$score), na.rm=T)
+save(models_list, file = paste0("outputs/",directory,"/",descriptor,"_default._10fold_cvseed1_instance",as.character(args),".RData"))
+
 
 h2o.shutdown()
 

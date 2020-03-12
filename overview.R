@@ -118,7 +118,7 @@ resp <- resp[resp$overallSurvival != 0,]
 
 
 
-directory <- "clin-auc"#"mut" #"rna"
+directory <- "clin-surv"#"mut" #"rna"
 descriptor <- directory
 feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # path to features
 response_path = paste0("features/",directory,"/",descriptor,"_response.RData") # path to response

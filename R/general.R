@@ -235,6 +235,5 @@ mixedorder <- function(x,
   
   return(retval)
 }
-  
 
-  
+
