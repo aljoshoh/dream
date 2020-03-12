@@ -75,11 +75,10 @@ cv <- function(
   if(stack){ # For each of the feature dfs in the stacking list, align the samples:
     aligned <- c()
     for(i in 1:length(feature_matrix)){
-      feature_matrix[[i]] <- feature_matrix[intersect(row.names(feature_matrix[[i]]), row.names(phenotype_matrix)),]
-      phenotype_matrix <- phenotype_matrix[intersect(row.names(feature_matrix), row.names(phenotype_matrix)),]
-      print(dim(feature_matrix[[i]]))
-      print(dim(phenotype_matrix[[i]]))
+      feature_matrix[[i]] <- (feature_matrix[[i]])[intersect(row.names(feature_matrix[[i]]), row.names(phenotype_matrix)),]
+      phenotype_matrix <- phenotype_matrix[intersect(row.names(feature_matrix[[i]]), row.names(phenotype_matrix)),]
     }
+    feature_matrix <- feature_matrix[[1]] # HACK, assuming that the list of feature-matrices has the same rows for each df in list feature_matrix
   }
   
   message(paste0("Feature matrix is of dimension ",as.character(nrow(feature_matrix)),"x",as.character(ncol(feature_matrix))," !"))

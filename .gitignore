@@ -12,6 +12,7 @@ dream_data_leaderboard/
 features_validation/*
 submission/sc1/models/*
 submission/sc2/models/*
+images/*
 
 !features/.gitkeep
 !metadata/.gitkeep

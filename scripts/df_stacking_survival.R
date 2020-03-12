@@ -97,6 +97,9 @@ for(y in 1:1){
 }
 
 stack_features <- preds_stack
+for(i in 1:length(stack_features)){
+  colnames(stack_features[[i]]) = c("mut.rf","rna.rf","clin.rf","auc.rf")
+}
 dump_features(stack_features, path = "features/stacked_models_sc2_features.RData")
 surv_stack <- surv_rna[intsec,]
 dump_features(surv_stack, path = "features/stacked_models_sc2_response.RData")
@@ -104,10 +107,10 @@ dump_features(surv_stack, path = "features/stacked_models_sc2_response.RData")
 
 models_list_stacked <- run_pipeline_benchmark(
   feature_path = "features/stacked_models_sc2_features.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
-  response_path = paste0("features/",directory,"/",descriptor,"_response.RData"), # path to response
-  submission = F,
-  kfold = NULL, 
-  method = "rf",
+  response_path = "features/stacked_models_sc2_response.RData", # path to response
+  submission = T,
+  kfold = 10, 
+  method = "rfsurv",
   hyperparam = list(c(NULL),c(NULL)), #c("alpha"=0.5), #list(c(333),c(500)), # c("alpha"=0.5),
   cvglm = T,
   returnFit = T, # if false, then it only returns the lambda
@@ -117,15 +120,15 @@ models_list_stacked <- run_pipeline_benchmark(
 )
 
 models_list_stacked <- run_pipeline_final(
-  feature_path = "features/stacked_models_sc1.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
-  response_path = paste0("features/",directory,"/",descriptor,"_response.RData"), # path to response
+  feature_path = "features/stacked_models_sc2_features.RData", # path to features, this time as list orderer like the drugs in the response path file !!!
+  response_path = "features/stacked_models_sc2_response.RData", # path to response
   submission = T,
-  method = "rf",
+  method = "rfsurv",
   hyperparam = list(c(NULL),c(NULL)), #c("alpha"=0.5), #list(c(333),c(500)), # c("alpha"=0.5),
   stack = T
 )
 
-dump_features(models_list_stacked, path = "outputs/stacked_models_sc1.RData")
+dump_features(models_list_stacked, path = "outputs/stacked_models_sc2.RData")
 
 
 
