@@ -71,7 +71,7 @@ import_rnaseq <- function( # it has all the samples
   rna <- sapply(rna, as.numeric)
   row.names(rna) = rownames
   rna <- t(rna)
-  rna[] <- rna %>% mutate_all(function(x) Hmisc::impute(x))
+  rna[is.na(rna)] <- 0 # hack
   return(rna)
 }
 
