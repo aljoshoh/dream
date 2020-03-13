@@ -128,6 +128,8 @@ models_list_stacked <- run_pipeline_benchmark( # does not work because of the CV
   stack = T
 )
 }
+models_list_stacked_cv <- models_list_stacked
+dump_features(models_list_stacked_cv, path = "outputs/stacked_models_cv_sc1.RData")
 
 models_list_stacked <- run_pipeline_final(
   feature_path = "features/stacked_models_sc1_features.RData", # path to features, this time as list orderer like the drugs in the response path file !!!

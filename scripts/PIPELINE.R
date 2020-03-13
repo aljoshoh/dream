@@ -21,11 +21,11 @@ print(paste0("Running with argument: ",as.character(args)))
 ##########################
 
 ### SCRIPT PARAMETER
-directory <- "mut-surv"#"mut" #"rna"
+directory <- "rna-surv"#"mut" #"rna"
 descriptor <- "rfsurv" # the descriptor means the method in this script, not the same as in PREPROCESS.R
 
-mtry <- seq(from= 1, to= 100, by= 10) #rna:seq(from= 1, to= 1000, by= 10) #clin:seq(from= 1, to= 100, by= 2)
-ntree <- seq(from=10, to= 5000, by = 100)
+mtry <- seq(from= 1, to= 1000, by= 20) 
+ntree <- seq(from=10, to= 2000, by = 300) 
 combos <- expand.grid(mtry, ntree)
 combos_local <- combos#combos[(10*args-9):(10*args),]
 ####################

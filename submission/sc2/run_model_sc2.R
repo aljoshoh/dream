@@ -1,3 +1,4 @@
+#Thanks Phong for crafting this !:)
 suppressPackageStartupMessages({
   library(tidyr)
   library(dplyr)
@@ -11,21 +12,21 @@ suppressPackageStartupMessages({
   library(glmnet)
 })
 
-source("/home/input_data_functions.R") ### alex bug fix, was no absolute path
-source("/home/general.R")
+source("/usr/local/bin/input_data_functions.R")
+source("/usr/local/bin/general.R")
 
-rna <- import_rnaseq("/home/input/rnaseq.csv")
-mut <- import_dnaseq("/home/input/dnaseq.csv")
-clin <- import_clin(path_num = "/home/input/clinical_numerical.csv", 
-                    path_cat = "/home/input/clinical_categorical.csv")
-auc <- import_aucs("/home/input/aucs.csv")
+rna <- import_rnaseq("/input/rnaseq.csv")
+mut <- import_dnaseq("/input/dnaseq.csv")
+clin <- import_clin(path_num = "/input/clinical_numerical.csv", 
+                    path_cat = "/input/clinical_categorical.csv")
+auc <- import_aucs("/input/aucs.csv")
 
-mod_rna  <- loadRData("/home/models/rna-surv/rfsurv_default.RData")
-mod_mut  <- loadRData("/home/models/mut-surv/rfsurv_default.RData")
-mod_clin  <- loadRData("/home/models/clin-surv/rfsurv_default.RData")
-mod_auc  <- loadRData("/home/models/auc-surv/rfsurv_default.RData")
+mod_rna  <- loadRData("/usr/local/bin/models/rna-surv/rfsurv_default.RData")
+mod_mut  <- loadRData("/usr/local/bin/models/mut-surv/rfsurv_default.RData")   # alex edits: changing /home to /usr/local/bin
+mod_clin  <- loadRData("/usr/local/bin/models/clin-surv/rfsurv_default.RData")
+mod_auc  <- loadRData("/usr/local/bin/models/auc-surv/rfsurv_default.RData")
 
-stacked_models <- loadRData("/home/models/stacked_models_sc2.RData")
+stacked_models <- loadRData("/usr/local/bin/models/stacked_models_sc2.RData")
 
 id = intersect(rownames(auc),intersect(rownames(clin), intersect(rownames(mut), rownames(rna))))
 clin = clin[id,]

@@ -72,7 +72,7 @@ import_rnaseq <- function(
   return(rna)
 }
 
-import_dnaseq <- function(
+import_dnaseq <- function( #### needs some reviewing !!!!!!
   path = "dream_data_leaderboard/dnaseq.csv"
 ){
   selected_features <- c("ADAMTS7_p.H1024R", "AGTPBP1_p.X97_splice", "ASXL1_p.G646Wfs*12", 
@@ -88,12 +88,18 @@ import_dnaseq <- function(
                          "ZNF711_p.C318F")
   mut <- read.csv(path,sep=",")
   mut$value <- 1
-  mut <- mut[-c(576),] 
-  mut <- spread(data = mut[,c("lab_id","var_name","value")], key = var_name, value = value)
+  #mut <- mut[-c(576),] #####<------------------- critical 
+  mut <- mut[,c("lab_id","var_name","value")]
+  mut <- spread(data = mut, key = var_name, value = value)
   mut[is.na(mut)] <- 0
   row.names(mut) <- make.names(mut$lab_id)
   mut <- mut[,-1]
+  not_in_data <- selected_features[!selected_features %in% colnames(mut)]
+  adding <- as.data.frame(matrix(0, ncol = length(not_in_data), nrow = nrow(mut)))
+  colnames(adding) = not_in_data
+  mut <- cbind(mut, adding)
   mut <- mut[,selected_features] %>% as.matrix()
+  print(dim(mut))
   return(mut)
 }
 
