@@ -8,16 +8,21 @@ library(Hmisc)
 source("submission/sc2/input_data_functions.R")
 source("submission/sc2/general.R")
 
+mod_rna  <- loadRData("submission/sc2/models/rna-surv/rfsurv_default.RData")
+mod_mut  <- loadRData("submission/sc2/models/mut-surv/rfsurv_default.RData")
+mod_clin  <- loadRData("submission/sc2/models/clin-surv/rfsurv_default.RData")
+mod_auc  <- loadRData("submission/sc2/models/auc-surv/rfsurv_default.RData")
+
 rna <- import_rnaseq("dream_data/rnaseq.csv")
 mut <- import_dnaseq("dream_data/dnaseq.csv")
 clin <- import_clin(path_num = "dream_data/clinical_numerical.csv", 
                     path_cat = "dream_data/clinical_categorical.csv")
 auc <- import_aucs("dream_data/aucs.csv")
-
-mod_rna  <- loadRData("submission/sc2/models/rna-surv/rfsurv_default.RData")
-mod_mut  <- loadRData("submission/sc2/models/mut-surv/rfsurv_default.RData")
-mod_clin  <- loadRData("submission/sc2/models/clin-surv/rfsurv_default.RData")
-mod_auc  <- loadRData("submission/sc2/models/auc-surv/rfsurv_default.RData")
+clin_feature = mod_clin_glm$gene_names_filtered[[1]] %>% unlist()
+clin_feature_miss = setdiff(clin_feature, colnames(clin))
+clin_feature_mat = matrix( data = 0, nrow = nrow(clin), ncol = length(clin_feature_miss),
+                           dimnames = list(row.names(clin), clin_feature_miss))
+clin = cbind(clin, clin_feature_mat)
 
 stacked_models <- loadRData("submission/sc2/models/stacked_models_sc2.RData")
 
@@ -45,4 +50,4 @@ final_predict_df$lab_id <- unlist(lapply(final_predict_df$lab_id, function(x) gs
 final_predict_df <- final_predict_df[,c("lab_id","survival")]
   
 
-write.csv(final_predict_df, "predictions_test.csv", row.names = F)
+write.csv(final_predict_df, "predictions_sc2_test.csv", row.names = F)

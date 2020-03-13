@@ -11,10 +11,6 @@ library(Hmisc, lib.loc = lib)
 source("submission/sc1/input_data_functions.R")
 source("R/general.R")
 
-rna <- import_rnaseq("dream_data/rnaseq.csv")
-mut <- import_dnaseq("dream_data/dnaseq.csv")
-clin <- import_clin(path_num = "dream_data/clinical_numerical.csv", 
-                    path_cat = "dream_data/clinical_categorical.csv") 
 
 mod_rna_glm  <- loadRData("submission/sc1/models/rna-auc/glm_default.RData")
 mod_rna_dnn  <- loadRData("submission/sc1/models/rna-auc/dnn_default.RData")
@@ -25,6 +21,18 @@ mod_mut_rf  <- loadRData("submission/sc1/models/mut-auc/rf_default.RData")
 mod_clin_glm  <- loadRData("submission/sc1/models/clin-auc/glm_default.RData")
 mod_clin_dnn  <- loadRData("submission/sc1/models/clin-auc/dnn_default.RData")
 mod_clin_rf  <- loadRData("submission/sc1/models/clin-auc/rf_default.RData")
+
+
+rna <- import_rnaseq("dream_data_leaderboard/rnaseq.csv")
+mut <- import_dnaseq("dream_data_leaderboard/dnaseq.csv")
+clin <- import_clin(path_num = "dream_data_leaderboard/clinical_numerical.csv", 
+                    path_cat = "dream_data_leaderboard/clinical_categorical.csv")
+clin_feature = mod_clin_glm$gene_names_filtered[[1]] %>% unlist()
+clin_feature_miss = setdiff(clin_feature, colnames(clin))
+clin_feature_mat = matrix( data = 0, nrow = nrow(clin), ncol = length(clin_feature_miss),
+                           dimnames = list(row.names(clin), clin_feature_miss))
+clin = cbind(clin, clin_feature_mat)
+
 
 stacked_models <- loadRData("submission/sc1/models/stacked_models_sc1.RData")
 

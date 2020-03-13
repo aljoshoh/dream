@@ -15,16 +15,21 @@ suppressPackageStartupMessages({
 source("/usr/local/bin/input_data_functions.R")
 source("/usr/local/bin/general.R")
 
-rna <- import_rnaseq("/input/rnaseq.csv")
-mut <- import_dnaseq("/input/dnaseq.csv")
-clin <- import_clin(path_num = "/input/clinical_numerical.csv", 
-                    path_cat = "/input/clinical_categorical.csv")
-auc <- import_aucs("/input/aucs.csv")
-
 mod_rna  <- loadRData("/usr/local/bin/models/rna-surv/rfsurv_default.RData")
 mod_mut  <- loadRData("/usr/local/bin/models/mut-surv/rfsurv_default.RData")   # alex edits: changing /home to /usr/local/bin
 mod_clin  <- loadRData("/usr/local/bin/models/clin-surv/rfsurv_default.RData")
 mod_auc  <- loadRData("/usr/local/bin/models/auc-surv/rfsurv_default.RData")
+
+rna <- import_rnaseq("/input/rnaseq.csv")
+mut <- import_dnaseq("/input/dnaseq.csv")
+clin <- import_clin(path_num = "/input/clinical_numerical.csv", 
+                    path_cat = "/input/clinical_categorical.csv")
+clin_feature = mod_clin_glm$gene_names_filtered[[1]] %>% unlist()
+clin_feature_miss = setdiff(clin_feature, colnames(clin))
+clin_feature_mat = matrix( data = 0, nrow = nrow(clin), ncol = length(clin_feature_miss),
+                           dimnames = list(row.names(clin), clin_feature_miss))
+clin = cbind(clin, clin_feature_mat)
+auc <- import_aucs("/input/aucs.csv")
 
 stacked_models <- loadRData("/usr/local/bin/models/stacked_models_sc2.RData")
 
