@@ -46,7 +46,7 @@ lambda.min_rna <- loadRData("/usr/local/bin/models/rna-auc/glm_default_lambda.mi
 lambda.min_mut <- loadRData("/usr/local/bin/models/mut-auc/glm_default_lambda.min.RData")
 lambda.min_clin <- loadRData("/usr/local/bin/models/clin-auc/glm_default_lambda.min.RData")
 
-h2o.init()
+h2o.init(ip="127.0.0.1", startH2O = TRUE)
 PATH = "/usr/local/bin/models/h2o_models/"
 id = intersect(rownames(clin), intersect(rownames(mut), rownames(rna)))
 clin = clin[id,]
