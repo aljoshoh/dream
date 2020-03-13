@@ -92,15 +92,17 @@ import_dnaseq <- function(
   mut <- pivot_wider(data = mut[,c("lab_id","var_name","value")], names_from = var_name, values_from = value, names_repair = 'unique')
   #mut <- spread(data = mut[,c("lab_id","var_name","value")], key = var_name, value = value)
   mut <- as.data.frame(mut)
+  rownames <- mut$lab_id
   mut[is.null(mut)] <- 0
   mut[is.na(mut)] <- 0
   row.names(mut) <- make.names(mut$lab_id)
-  mut <- mut[,-1]
+  #mut <- mut[,-1]
   mut <- as.data.frame(lapply(mut, function(x) unique(unlist(x))))#
   not_in_data <- selected_features[!selected_features %in% colnames(mut)]
   adding <- as.data.frame(matrix(0, ncol = length(not_in_data), nrow = nrow(mut)))
   colnames(adding) = not_in_data
   mut <- cbind(mut, adding)
+  row.names(mut) = rownames
   mut <- mut[,selected_features] %>% as.matrix()
   return(mut)
 }
