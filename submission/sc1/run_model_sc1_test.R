@@ -25,6 +25,13 @@ mod_clin_rf  <- loadRData("submission/sc1/models/clin-auc/rf_default.RData")
 
 rna <- import_rnaseq("dream_data/rnaseq.csv")
 mut <- import_dnaseq("dream_data_leaderboard/dnaseq.csv")
+
+samples <- row.names(rna)
+missing_mut <- samples[!samples %in% row.names(mut)]
+missing_zeros <- matrix(0, nrow = length(missing_mut), ncol = ncol(mut))
+row.names(missing_zeros) = missing_mut
+mut <- rbind(mut, missing_zeros)
+
 clin <- import_clin(path_num = "dream_data_leaderboard/clinical_numerical.csv", 
                     path_cat = "dream_data_leaderboard/clinical_categorical.csv")
 clin_feature = mod_clin_glm$gene_names_filtered[[1]] %>% unlist()

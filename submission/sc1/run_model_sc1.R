@@ -30,7 +30,7 @@ mut <- import_dnaseq("/input/dnaseq.csv")
 
 samples <- row.names(rna) # bugfix
 missing_mut <- samples[!samples %in% row.names(mut)]
-missing_zeros <- matrix(nrow = length(missing_mut), ncol = ncol(mut))
+missing_zeros <- matrix(0, nrow = length(missing_mut), ncol = ncol(mut))
 row.names(missing_zeros) = missing_mut
 mut <- rbind(mut, missing_zeros)
 
