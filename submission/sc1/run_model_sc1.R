@@ -14,15 +14,15 @@ suppressPackageStartupMessages({
 source("/usr/local/bin/input_data_functions.R") ### alex bug fix, was no absolute path
 source("/usr/local/bin/general.R")
 
-mod_rna_glm  <- loadRData("/usr/local/bin/sc1/models/rna-auc/glm_default.RData")
-mod_rna_dnn  <- loadRData("/usr/local/bin/sc1/models/rna-auc/dnn_default.RData")
-mod_rna_rf  <- loadRData("/usr/local/bin/sc1/models/rna-auc/rf_default.RData")
-mod_mut_glm  <- loadRData("/usr/local/bin/sc1/models/mut-auc/glm_default.RData")
-mod_mut_dnn  <- loadRData("/usr/local/bin/sc1/models/mut-auc/dnn_default.RData")
-mod_mut_rf  <- loadRData("/usr/local/bin/sc1/models/mut-auc/rf_default.RData")
-mod_clin_glm  <- loadRData("/usr/local/bin/sc1/models/clin-auc/glm_default.RData")
-mod_clin_dnn  <- loadRData("/usr/local/bin/sc1/models/clin-auc/dnn_default.RData")
-mod_clin_rf  <- loadRData("/usr/local/bin/sc1/models/clin-auc/rf_default.RData")
+mod_rna_glm  <- loadRData("/usr/local/bin/models/rna-auc/glm_default.RData")
+mod_rna_dnn  <- loadRData("/usr/local/bin/models/rna-auc/dnn_default.RData")
+mod_rna_rf  <- loadRData("/usr/local/bin/models/rna-auc/rf_default.RData")
+mod_mut_glm  <- loadRData("/usr/local/bin/models/mut-auc/glm_default.RData")
+mod_mut_dnn  <- loadRData("/usr/local/bin/models/mut-auc/dnn_default.RData")
+mod_mut_rf  <- loadRData("/usr/local/bin/models/mut-auc/rf_default.RData")
+mod_clin_glm  <- loadRData("/usr/local/bin/models/clin-auc/glm_default.RData")
+mod_clin_dnn  <- loadRData("/usr/local/bin/models/clin-auc/dnn_default.RData")
+mod_clin_rf  <- loadRData("/usr/local/bin/models/clin-auc/rf_default.RData")
 
 
 rna <- import_rnaseq("/input/rnaseq.csv")
