@@ -3,6 +3,7 @@ suppressPackageStartupMessages({
   library(tidyr)
   library(dplyr)
   library(randomForest)
+  library(randomForestSRC)
   library(survival)
   library(glmnet)
   library(h2o)
