@@ -102,7 +102,7 @@ import_dnaseq <- function(
   adding <- as.data.frame(matrix(0, ncol = length(not_in_data), nrow = nrow(mut)))
   colnames(adding) = not_in_data
   mut <- cbind(mut, adding)
-  row.names(mut) = rownames
+  row.names(mut) = make.names(rownames)
   mut <- mut[,selected_features] %>% as.matrix()
   return(mut)
 }
