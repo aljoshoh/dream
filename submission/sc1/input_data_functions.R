@@ -66,12 +66,12 @@ import_rnaseq <- function( # it has all the samples
   path = "dream_data_leaderboard/rnaseq.csv"
 ){
   rna <- read.csv(path,sep=",")
-  sample.list <- make.names(auc$lab_id)
   rownames<- rna$Gene
   rna <- rna[,-c(1,2)]
   rna <- sapply(rna, as.numeric)
   row.names(rna) = rownames
   rna <- t(rna)
+  auc[] <- auc %>% mutate_all(function(x) Hmisc::impute(x))
   return(rna)
 }
 

@@ -23,7 +23,7 @@ mod_clin_dnn  <- loadRData("submission/sc1/models/clin-auc/dnn_default.RData")
 mod_clin_rf  <- loadRData("submission/sc1/models/clin-auc/rf_default.RData")
 
 
-rna <- import_rnaseq("dream_data_leaderboard/rnaseq.csv")
+rna <- import_rnaseq("dream_data/rnaseq.csv")
 mut <- import_dnaseq("dream_data_leaderboard/dnaseq.csv")
 clin <- import_clin(path_num = "dream_data_leaderboard/clinical_numerical.csv", 
                     path_cat = "dream_data_leaderboard/clinical_categorical.csv")
