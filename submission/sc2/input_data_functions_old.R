@@ -30,7 +30,7 @@ import_aucs <- function(
   auc <- spread(data=auc, key=inhibitor, value=auc)
   row.names(auc) = make.names(auc$lab_id)
   auc <- auc[,-1]
-  auc[] <- auc %>% mutate_all(function(x) impute(x))
+  auc[] <- auc %>% mutate_all(function(x) Hmisc::impute(x))
   selected_features <- c("17-AAG (Tanespimycin)", "A-674563", "Afatinib (BIBW-2992)", 
                          "Alisertib (MLN8237)", "AT7519", "Axitinib (AG-013736)", "AZD1480", 
                          "Barasertib (AZD1152-HQPA)", "BEZ235", "BMS-345541", "Bortezomib (Velcade)", 
@@ -88,21 +88,11 @@ import_dnaseq <- function(
                          "ZNF711_p.C318F")
   mut <- read.csv(path,sep=",")
   mut$value <- 1
-  ###mut <- mut[-c(576),] 
-  mut <- pivot_wider(data = mut[,c("lab_id","var_name","value")], names_from = var_name, values_from = value, names_repair = 'unique')
-  #mut <- spread(data = mut[,c("lab_id","var_name","value")], key = var_name, value = value)
-  mut <- as.data.frame(mut)
-  rownames <- mut$lab_id
-  mut[is.null(mut)] <- 0
+  mut <- mut[-c(576),] 
+  mut <- spread(data = mut[,c("lab_id","var_name","value")], key = var_name, value = value)
   mut[is.na(mut)] <- 0
   row.names(mut) <- make.names(mut$lab_id)
-  #mut <- mut[,-1]
-  mut <- as.data.frame(lapply(mut, function(x) unique(unlist(x))))#
-  not_in_data <- selected_features[!selected_features %in% colnames(mut)]
-  adding <- as.data.frame(matrix(0, ncol = length(not_in_data), nrow = nrow(mut)))
-  colnames(adding) = not_in_data
-  mut <- cbind(mut, adding)
-  row.names(mut) = make.names(rownames)
+  mut <- mut[,-1]
   mut <- mut[,selected_features] %>% as.matrix()
   return(mut)
 }

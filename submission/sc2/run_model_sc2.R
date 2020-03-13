@@ -25,7 +25,7 @@ rna <- import_rnaseq("/input/rnaseq.csv")
 mut <- import_dnaseq("/input/dnaseq.csv")
 clin <- import_clin(path_num = "/input/clinical_numerical.csv", 
                     path_cat = "/input/clinical_categorical.csv")
-clin_feature = mod_clin_glm$gene_names_filtered[[1]] %>% unlist()
+clin_feature = mod_clin$gene_names_filtered[[1]] %>% unlist()
 clin_feature_miss = setdiff(clin_feature, colnames(clin))
 clin_feature_mat = matrix( data = 0, nrow = nrow(clin), ncol = length(clin_feature_miss),
                            dimnames = list(row.names(clin), clin_feature_miss))
