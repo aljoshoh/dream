@@ -23,6 +23,13 @@ mod_auc  <- loadRData("/usr/local/bin/models/auc-surv/rfsurv_default.RData")
 
 rna <- import_rnaseq("/input/rnaseq.csv")
 mut <- import_dnaseq("/input/dnaseq.csv")
+samples <- row.names(rna)
+missing_mut <- samples[!samples %in% row.names(mut)]
+missing_zeros <- matrix(nrow = length(missing_mut), ncol = ncol(mut))
+row.names(missing_zeros) = missing_mut
+mut <- rbind(mut, missing_zeros)
+
+
 clin <- import_clin(path_num = "/input/clinical_numerical.csv", 
                     path_cat = "/input/clinical_categorical.csv")
 clin_feature = mod_clin$gene_names_filtered[[1]] %>% unlist()

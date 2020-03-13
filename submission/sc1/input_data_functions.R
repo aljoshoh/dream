@@ -1,3 +1,4 @@
+# SC2: UPDATE
 # Contains functions for importing the test data
 library(Hmisc)
 library(dplyr)
@@ -23,14 +24,15 @@ get_features <- function(
 }######################################################
 
 
-import_aucs <- function(
+import_aucs <- function( # this should give all the samples !
   path = "dream_data_leaderboard/aucs.csv"
 ){
   auc <- read.csv(path, sep=",")
+  sample.list <- make.names(auc$lab_id) # if error, this is the sample list
   auc <- spread(data=auc, key=inhibitor, value=auc)
   row.names(auc) = make.names(auc$lab_id)
   auc <- auc[,-1]
-  auc[] <- auc %>% mutate_all(function(x) impute(x))
+  auc[] <- auc %>% mutate_all(function(x) Hmisc::impute(x))
   selected_features <- c("17-AAG (Tanespimycin)", "A-674563", "Afatinib (BIBW-2992)", 
                          "Alisertib (MLN8237)", "AT7519", "Axitinib (AG-013736)", "AZD1480", 
                          "Barasertib (AZD1152-HQPA)", "BEZ235", "BMS-345541", "Bortezomib (Velcade)", 
@@ -60,10 +62,11 @@ import_aucs <- function(
 }
 
 
-import_rnaseq <- function(
+import_rnaseq <- function( # it has all the samples
   path = "dream_data_leaderboard/rnaseq.csv"
 ){
   rna <- read.csv(path,sep=",")
+  sample.list <- make.names(auc$lab_id)
   rownames<- rna$Gene
   rna <- rna[,-c(1,2)]
   rna <- sapply(rna, as.numeric)
@@ -119,6 +122,7 @@ import_clin <- function( #TODO: check if dfs need to be imputed
   row.names(clin_num) <- make.names(clin_num$lab_id)
   clin_num <- clin_num[,-1]
   clin <- cbind(clin_num, clin_cat)
+  clin[] <- clin %>% mutate_all(function(x) Hmisc::impute(x))
   clin <- model.matrix(~., data=clin)
   return(clin)  
 }

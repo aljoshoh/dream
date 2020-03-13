@@ -14,11 +14,19 @@ mod_clin  <- loadRData("submission/sc2/models/clin-surv/rfsurv_default.RData")
 mod_auc  <- loadRData("submission/sc2/models/auc-surv/rfsurv_default.RData")
 
 rna <- import_rnaseq("dream_data/rnaseq.csv")
+
 mut <- import_dnaseq("dream_data/dnaseq.csv")
+
+samples <- row.names(rna)
+missing_mut <- samples[!samples %in% row.names(mut)]
+missing_zeros <- matrix(nrow = length(missing_mut), ncol = ncol(mut))
+row.names(missing_zeros) = missing_mut
+mut <- rbind(mut, missing_zeros)
+
 clin <- import_clin(path_num = "dream_data/clinical_numerical.csv", 
                     path_cat = "dream_data/clinical_categorical.csv")
 auc <- import_aucs("dream_data/aucs.csv")
-clin_feature = mod_clin_glm$gene_names_filtered[[1]] %>% unlist()
+clin_feature = mod_clin$gene_names_filtered[[1]] %>% unlist()
 clin_feature_miss = setdiff(clin_feature, colnames(clin))
 clin_feature_mat = matrix( data = 0, nrow = nrow(clin), ncol = length(clin_feature_miss),
                            dimnames = list(row.names(clin), clin_feature_miss))
