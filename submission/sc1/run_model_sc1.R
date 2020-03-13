@@ -11,33 +11,43 @@ suppressPackageStartupMessages({
   library(glmnet)
 })
 
-source("/home/input_data_functions.R") ### alex bug fix, was no absolute path
-source("/home/general.R")
+source("/usr/local/bin/input_data_functions.R") ### alex bug fix, was no absolute path
+source("/usr/local/bin/general.R")
+
+mod_rna_glm  <- loadRData("/usr/local/bin/sc1/models/rna-auc/glm_default.RData")
+mod_rna_dnn  <- loadRData("/usr/local/bin/sc1/models/rna-auc/dnn_default.RData")
+mod_rna_rf  <- loadRData("/usr/local/bin/sc1/models/rna-auc/rf_default.RData")
+mod_mut_glm  <- loadRData("/usr/local/bin/sc1/models/mut-auc/glm_default.RData")
+mod_mut_dnn  <- loadRData("/usr/local/bin/sc1/models/mut-auc/dnn_default.RData")
+mod_mut_rf  <- loadRData("/usr/local/bin/sc1/models/mut-auc/rf_default.RData")
+mod_clin_glm  <- loadRData("/usr/local/bin/sc1/models/clin-auc/glm_default.RData")
+mod_clin_dnn  <- loadRData("/usr/local/bin/sc1/models/clin-auc/dnn_default.RData")
+mod_clin_rf  <- loadRData("/usr/local/bin/sc1/models/clin-auc/rf_default.RData")
+
 
 rna <- import_rnaseq("/input/rnaseq.csv")
 mut <- import_dnaseq("/input/dnaseq.csv")
-clin <- import_clin(path_num = "/input/clinical_numerical.csv", path_cat = "/input/clinical_categorical.csv") 
- 
-mod_rna_glm  <- loadRData("/home/models/rna-auc/glm_default.RData")
-mod_rna_dnn  <- loadRData("/home/models/rna-auc/dnn_default.RData")
-mod_rna_rf  <- loadRData("/home/models/rna-auc/rf_default.RData")
-mod_mut_glm  <- loadRData("/home/models/mut-auc/glm_default.RData")
-mod_mut_dnn  <- loadRData("/home/models/mut-auc/dnn_default.RData")
-mod_mut_rf  <- loadRData("/home/models/mut-auc/rf_default.RData")
-mod_clin_glm  <- loadRData("/home/models/clin-auc/glm_default.RData")
-mod_clin_dnn  <- loadRData("/home/models/clin-auc/dnn_default.RData")
-mod_clin_rf  <- loadRData("/home/models/clin-auc/rf_default.RData")
+clin <- import_clin(path_num = "/input/clinical_numerical.csv", 
+                    path_cat = "/input/clinical_categorical.csv")
 
-inhibitor_name <- loadRData("/home/drug_names.RData")
+### clinical feature bugfix
+clin_feature = mod_clin_glm$gene_names_filtered[[1]] %>% unlist()
+clin_feature_miss = setdiff(clin_feature, colnames(clin))
+clin_feature_mat = matrix( data = 0, nrow = nrow(clin), ncol = length(clin_feature_miss),
+                           dimnames = list(row.names(clin), clin_feature_miss))
+clin = cbind(clin, clin_feature_mat)
+###
 
-stacked_models <- loadRData("/home/models/stacked_models_sc1.RData")
+inhibitor_name <- loadRData("/usr/local/bin/drug_names.RData")
 
-lambda.min_rna <- loadRData("/home/models/rna-auc/glm_default_lambda.min.RData")
-lambda.min_mut <- loadRData("/home/models/mut-auc/glm_default_lambda.min.RData")
-lambda.min_clin <- loadRData("/home/models/clin-auc/glm_default_lambda.min.RData")
+stacked_models <- loadRData("/usr/local/bin/models/stacked_models_sc1.RData")
+
+lambda.min_rna <- loadRData("/usr/local/bin/models/rna-auc/glm_default_lambda.min.RData")
+lambda.min_mut <- loadRData("/usr/local/bin/models/mut-auc/glm_default_lambda.min.RData")
+lambda.min_clin <- loadRData("/usr/local/bin/models/clin-auc/glm_default_lambda.min.RData")
 
 h2o.init()
-PATH = "/home/models/h2o_models/"
+PATH = "/usr/local/bin/models/h2o_models/"
 id = intersect(rownames(clin), intersect(rownames(mut), rownames(rna)))
 clin = clin[id,]
 mut = mut[id,]
