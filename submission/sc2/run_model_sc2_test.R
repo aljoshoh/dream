@@ -13,9 +13,9 @@ mod_mut  <- loadRData("submission/sc2/models/mut-surv/rfsurv_default.RData")
 mod_clin  <- loadRData("submission/sc2/models/clin-surv/rfsurv_default.RData")
 mod_auc  <- loadRData("submission/sc2/models/auc-surv/rfsurv_default.RData")
 
-rna <- import_rnaseq("dream_data/rnaseq.csv")
+rna <- import_rnaseq("dream_data_leaderboard/rnaseq.csv")
 
-mut <- import_dnaseq("dream_data/dnaseq.csv")
+mut <- import_dnaseq("dream_data_leaderboard//dnaseq.csv")
 
 samples <- row.names(rna)
 missing_mut <- samples[!samples %in% row.names(mut)]
@@ -23,8 +23,8 @@ missing_zeros <- matrix(0, nrow = length(missing_mut), ncol = ncol(mut))
 row.names(missing_zeros) = missing_mut
 mut <- rbind(mut, missing_zeros)
 
-clin <- import_clin(path_num = "dream_data/clinical_numerical.csv", 
-                    path_cat = "dream_data/clinical_categorical.csv")
+clin <- import_clin(path_num = "dream_data_leaderboard/clinical_numerical.csv", 
+                    path_cat = "dream_data_leaderboard/clinical_categorical.csv")
 auc <- import_aucs("dream_data/aucs.csv")
 clin_feature = mod_clin$gene_names_filtered[[1]] %>% unlist()
 clin_feature_miss = setdiff(clin_feature, colnames(clin))
