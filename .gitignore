@@ -13,6 +13,7 @@ features_validation/*
 submission/sc1/models/*
 submission/sc2/models/*
 images/*
+output/*
 
 !features/.gitkeep
 !metadata/.gitkeep
