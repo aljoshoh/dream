@@ -24,10 +24,15 @@ print(paste0("Running with argument: ",as.character(args)))
 directory <- "rna-surv"#"mut" #"rna"
 descriptor <- "rfsurv" # the descriptor means the method in this script, not the same as in PREPROCESS.R
 
-mtry <- seq(from= 1, to= 1000, by= 20) 
-ntree <- seq(from=10, to= 2000, by = 300) 
-combos <- expand.grid(mtry, ntree)
-combos_local <- combos#combos[(10*args-9):(10*args),]
+mtry <- seq(from= 1, to= 1000, by= 100) #rna:seq(from= 1, to= 1000, by= 50) 
+ntree <- seq(from=100, to= 1000, by = 100) 
+combos <- expand.grid(mtry, ntree) %>% t
+combos_local <- cut_df(df = combos, totaln = 40, index = args)
+print(ncol(combos_local))
+
+#clin:param=list(c(10),c(500))
+#mut:param=list(c(16),c(100))
+#auc:param=list(c(),)
 ####################
 if(descriptor=="dnn"){h2o.init(port=8508)}
 cvscore <- c()
@@ -49,7 +54,8 @@ for(i in 1:nrow(combos_local)){
   cvscore[i] <- mean(unlist(models_list$score), na.rm=T)
   print(i/nrow(combos)*100)
 }
-save(cvscore, file = paste0("outputs/",directory,"/tuning/",descriptor,"_performance_10fold_cvseed1_instance",as.character(args),".RData"))
+combos_local$cvscore <- cvscore
+save(combos_local, file = paste0("outputs/",directory,"/tuning/",descriptor,"_performance_10fold_cvseed1_instance",as.character(args),"100var.RData"))
 #save(models_list, file = paste0("outputs/",directory,"/",descriptor,"_default._10fold_cvseed1_instance",as.character(args),".RData"))
 
 h2o.shutdown()
@@ -79,7 +85,7 @@ if(FALSE){
     response_path = paste0("features/",directory,"/",descriptor,"_response.RData"), # path to response
     submission = T,
     method = descriptor,
-    hyperparam = param,
+    hyperparam = list(c(NULL),c(NULL)),
     FUN = AnvSigSurvFeature #AnvSigSurvFeature
   )
   
@@ -92,6 +98,24 @@ if(FALSE){
 
 
 
+
+
+########## Gridsearch
+if(FALSE){
+  library(reshape2)
+  s <- spread(combos_local, key = "Var1", value = cvscore)
+  row.names(s) = s$Var2
+  s <- s[,-1]
+  s <- as.matrix(s)
+  s <- melt(s)
+  ggplot(s, aes(x = Var2, y = Var1)) + 
+         geom_raster(aes(fill=value)) + 
+         scale_fill_gradient(low="grey90", high="red") +
+         labs(x="letters", y="LETTERS", title="Matrix") +
+         theme_bw() + theme(axis.text.x=element_text(size=9, angle=0, vjust=0.3),
+                                                     axis.text.y=element_text(size=9),
+                                                     plot.title=element_text(size=11))
+}
 
 
 

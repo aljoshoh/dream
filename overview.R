@@ -72,20 +72,28 @@ auc <- spread(data=auc, key=inhibitor, value=auc)
 row.names(auc) = make.names(auc$lab_id)
 auc <- auc[,-1]
 auc <- auc[,apply(auc,2, function(x) length(which(is.na(x)))) < 60]
-auc <- auc[apply(auc,1, function(x) length(which(is.na(x)))) < 20,]
+#auc <- auc[apply(auc,1, function(x) length(which(is.na(x)))) < 20,]
 auc[] <- auc %>% mutate_all(function(x) impute(x))                       # only for the survival prediction !
 
 
 mut_original <- read.csv("dream_data_leaderboard/dnaseq.csv",sep=",") #CHECK
 mut <- read.csv("features_validation/mut/dnaseq_full.csv")
 mut$value <- 1
-mut <- mut[-c(576),]
-mut <- spread(data = mut[,c("lab_id","var_name","value")], key = var_name, value = value)
+mut <- pivot_wider(data = mut[,c("lab_id","var_name","value")], names_from = var_name, values_from = value, names_repair = 'unique')
+#mut <- spread(data = mut[,c("lab_id","var_name","value")], key = var_name, value = value)
+mut <- as.data.frame(mut)
+rownames <- mut$lab_id
+mut[is.null(mut)] <- 0
 mut[is.na(mut)] <- 0
 row.names(mut) <- make.names(mut$lab_id)
 mut <- mut[,-1]
 mut <- mut[, apply(mut, 2, sum) >= 4 ]
 
+samples <- row.names(rna) # bugfix
+missing_mut <- samples[!samples %in% row.names(mut)]
+missing_zeros <- matrix(0, nrow = length(missing_mut), ncol = ncol(mut))
+row.names(missing_zeros) = missing_mut
+mut <- rbind(mut, missing_zeros)
 
 clin_cat <- read.csv("dream_data_leaderboard/clinical_categorical.csv",sep=",") # Dream data
 clin_cat <- clin_cat %>% mutate_all(factor)
@@ -115,6 +123,20 @@ resp$vitalStatus[resp$vitalStatus == "Dead"] <- 0
 resp$vitalStatus <- as.numeric(resp$vitalStatus)
 resp <- resp[resp$overallSurvival != 0,]
 
+
+#### Retrain models !
+source("submission/sc1/input_data_functions.R")
+auc <- import_aucs(path = "dream_data_leaderboard/aucs.csv")
+rna <- import_rnaseq(path = "dream_data_leaderboard/rnaseq.csv")
+mut <- import_dnaseq(path = "dream_data_leaderboard/dnaseq.csv")
+clin <- import_clin(path_num = "dream_data_leaderboard/clinical_numerical.csv", path_cat = "dream_data_leaderboard/clinical_categorical.csv")
+
+
+
+clin_feature_miss = setdiff(clin_feature, colnames(clin))
+clin_feature_mat = matrix( data = 0, nrow = nrow(clin), ncol = length(clin_feature_miss),
+                           dimnames = list(row.names(clin), clin_feature_miss))
+clin = cbind(clin, clin_feature_mat)
 
 
 
