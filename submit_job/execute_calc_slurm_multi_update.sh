@@ -43,7 +43,7 @@ echo "Finished preprocessing."
 ############################
 
 echo "Launching job array..."
-sbatch --output=/home/icb/$USER/slurm_output-%j.txt --error=/home/icb/$USER/slurm_error-%j.txt --ntasks=$6 --array=$paralleltask1-$paralleltask2 $BASEDIRarrayscript/$filename.sh "$BASEDIR" "$paralleltasks" "$FILE" "$4" "$5" "$6"
+sbatch --nice=10000 --output=/home/icb/$USER/slurm_output-%j.txt --error=/home/icb/$USER/slurm_error-%j.txt --ntasks=$6 --array=$paralleltask1-$paralleltask2 $BASEDIRarrayscript/$filename.sh "$BASEDIR" "$paralleltasks" "$FILE" "$4" "$5" "$6"
 
 # TODO
 # calculate paralelltasks because its not supplied

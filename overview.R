@@ -1,6 +1,8 @@
 library(org.Hs.eg.db)
 library(dplyr)
 library(ComplexHeatmap)
+library(mice, lib.loc = "/home/alexander.ohnmacht/R/x86_64-redhat-linux-gnu-library/3.6")
+library(Hmisc, lib.loc = "/home/alexander.ohnmacht/R/x86_64-redhat-linux-gnu-library/3.6")
 
 library(synapser)
 library(synapserutils)
@@ -73,12 +75,13 @@ row.names(auc) = make.names(auc$lab_id)
 auc <- auc[,-1]
 auc <- auc[,apply(auc,2, function(x) length(which(is.na(x)))) < 60]
 #auc <- auc[apply(auc,1, function(x) length(which(is.na(x)))) < 20,]
-auc[] <- auc %>% mutate_all(function(x) impute(x))                       # only for the survival prediction !
+auc[] <- auc %>% mutate_all(function(x) Hmisc::impute(x))                       # only for the survival prediction !
 
 
 mut_original <- read.csv("dream_data_leaderboard/dnaseq.csv",sep=",") #CHECK
 mut <- read.csv("features_validation/mut/dnaseq_full.csv")
 mut$value <- 1
+mut <- mut[-c(576),] 
 mut <- pivot_wider(data = mut[,c("lab_id","var_name","value")], names_from = var_name, values_from = value, names_repair = 'unique')
 #mut <- spread(data = mut[,c("lab_id","var_name","value")], key = var_name, value = value)
 mut <- as.data.frame(mut)
@@ -87,13 +90,17 @@ mut[is.null(mut)] <- 0
 mut[is.na(mut)] <- 0
 row.names(mut) <- make.names(mut$lab_id)
 mut <- mut[,-1]
+rownames <- row.names(mut)
+mut <- as.data.frame(lapply(mut, function(x) unlist(x)))
+row.names(mut) = rownames
 mut <- mut[, apply(mut, 2, sum) >= 4 ]
 
 samples <- row.names(rna) # bugfix
 missing_mut <- samples[!samples %in% row.names(mut)]
 missing_zeros <- matrix(0, nrow = length(missing_mut), ncol = ncol(mut))
 row.names(missing_zeros) = missing_mut
-mut <- rbind(mut, missing_zeros)
+colnames(missing_zeros) = colnames(mut)
+mut <- rbind(mut, missing_zeros) # only done in the 
 
 clin_cat <- read.csv("dream_data_leaderboard/clinical_categorical.csv",sep=",") # Dream data
 clin_cat <- clin_cat %>% mutate_all(factor)
@@ -109,17 +116,25 @@ row.names.clin <- row.names(clin)
 clin <- clin %>% mutate_at(colnames(clin_cat), factor)
 row.names(clin) = make.names(row.names.clin)
 clin$treatment_stratification <- factor(clin$treatment_stratification)
-clin <- clin[,-ncol(clin)]
+clin <- clin[,-ncol(clin)] #only imputed for survival prediction ...!
+rownames <- row.names(clin)
+clin <- clin[,apply(clin,2, function(x) length(which(is.na(x)))) < 60]
+clin[] <- clin %>% mutate_all(function(x) Hmisc::impute(x))  
+#clin <- mice(clin, m=2, maxit = 10, method = 'pmm', seed = 500)
+#clin <- complete(data = clin)
+#row.names(clin) = rownames
 clin <- model.matrix(~., data=clin)
 
+
+library(ggfortify, lib.loc =  "/home/alexander.ohnmacht/R/x86_64-redhat-linux-gnu-library/3.6")
 resp <- read.csv("features_validation/survival/response_full.csv",sep=",")
 resp_original <- read.csv("dream_data_leaderboard/response.csv")
 resp <- resp[,-1] # not in original
 row.names(resp) = make.names(resp$lab_id)
 resp <- resp[,-1]
 resp$vitalStatus <- as.character(resp$vitalStatus)
-resp$vitalStatus[resp$vitalStatus == "Alive"] <- 1
-resp$vitalStatus[resp$vitalStatus == "Dead"] <- 0
+resp$vitalStatus[resp$vitalStatus == "Alive"] <- 0
+resp$vitalStatus[resp$vitalStatus == "Dead"] <- 1
 resp$vitalStatus <- as.numeric(resp$vitalStatus)
 resp <- resp[resp$overallSurvival != 0,]
 
@@ -139,15 +154,15 @@ clin_feature_mat = matrix( data = 0, nrow = nrow(clin), ncol = length(clin_featu
 clin = cbind(clin, clin_feature_mat)
 
 
+all <- Reduce(merge, lapply(list(mut,rna,clin,auc), function(x) data.frame(x, rn = row.names(x)))) %>% column_to_rownames("rn")
 
-directory <- "clin-surv"#"mut" #"rna"
+directory <- "auc-surv"#"mut" #"rna"
 descriptor <- directory
 feature_path = paste0("features/",directory,"/",descriptor,"_features.RData") # path to features
 response_path = paste0("features/",directory,"/",descriptor,"_response.RData") # path to response
 feature_path
 response_path
-
-save(clin, file = feature_path)
+#save(all, file = feature_path)
 save(resp, file = response_path)
 
 
