@@ -153,7 +153,7 @@ make_fit <- function(
     if(!stack){
       message(paste0("Executing feature selection for fold ",as.character(i)))
       test <<- feature_matrix[folds$train_sets[[i]],]
-      FILTER_FEATURE_NAMES <- FUN(feature_matrix[folds$train_sets[[i]],], phenotype_matrix[folds$train_sets[[i]],])
+      FILTER_FEATURE_NAMES <- FUN(feature = feature_matrix[feature = folds$train_sets[[i]],], auc = phenotype_matrix[folds$train_sets[[i]],])
       ####################
       message(paste0("-> Length of partial response: ",as.character(length(FILTER_FEATURE_NAMES))," !"))
     }
@@ -246,8 +246,9 @@ make_fit <- function(
       ############################
       mse <- mean(model$diff*model$diff)
       
-      if(method %in% c("glm","rf","dnn")){
+      if(!(method %in% c("rfsurv","cox"))){
         cor <- tryCatch(cor(model$pred, y_test, use = "complete.obs", method = "spearman"), error = function(e){message("no correlation calculated");return(NA)})
+        if(is.null(cor)){cor <- NA}
         score[i,j] <- cor
       } 
       if(method %in% c("rfsurv","cox")){
@@ -391,7 +392,7 @@ make_fit_whole <- function(
       
       if(method == "rf"){
         model <- use_rf(x_train, y_train, x_test, y_test,
-                        hyperparam = hyperparam,
+                        hyperparam = hyperparam[[j]], # !!!! optimal hyperparameters
                         y_name = y_name,
                         seed = seed
         )
