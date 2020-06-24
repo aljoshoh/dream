@@ -21,6 +21,7 @@ use_glm <- function(
   message("        Fitting...")
   if(cvglm ==T){
     fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha)
+    fit <<- fit
   }else{
     fit <- glmnet::glmnet(x = x_train, y = y_train, alpha = alpha)
   }
@@ -33,7 +34,6 @@ use_glm <- function(
     pred <- NULL
     diff <- NULL
   }
-  
   return(list(pred=pred, diff=diff, fit=fit))
 }######################################################
 
@@ -108,6 +108,7 @@ use_rfSurvival <- function(
   }
   return (list(pred = Predicted, diff = NULL, fit = fit))
 }
+
 use_rf <- function(
   ### Random Forst
   ### TODO
@@ -201,6 +202,107 @@ use_dnn <- function(
   
   diff <- pred - y_test
   fit <- h2o.saveModel(object=fit, path="metadata/h2odnn/", force=TRUE)
+  
+  return(list(pred=pred, diff=diff, fit=fit))
+}######################################################
+
+
+
+use_glm_binary <- function(
+  ### Linear Method
+  ### TODO
+  ### -return interesting model parameter
+  ######################################################
+  x_train=x_train,
+  y_train=y_train,
+  x_test=x_test,
+  y_test=y_test,
+  hyperparam=hyperparam,
+  y_name=y_name,
+  seed = F,
+  cvglm = T
+){
+  alpha = hyperparam["alpha"]
+  y_train <- y_train[,as.character(y_name)]
+  y_train <- factor(y_train)
+  message("        Fitting...")
+  if(cvglm ==T){
+    fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha, family="binomial", type.measure = "class")
+  }else{
+    fit <- glmnet::glmnet(x = x_train, y = y_train, alpha = alpha, family="binomial")
+  }
+  
+  message("        Validating...")
+  if(cvglm ==T){
+    pred <- predict(fit, x_test, s = 'lambda.min')
+    #diff <- pred - y_test
+    diff <- NULL
+  }else{
+    pred <- NULL
+    diff <- NULL
+  }
+  
+  return(list(pred=pred, diff=diff, fit=fit))
+}######################################################
+
+
+use_rf_bin <- function(
+  ### Random Forst
+  ### TODO
+  ### -return interesting model parameter
+  ### -tune rf parameter
+  ######################################################
+  x_train=x_train,
+  y_train=y_train,
+  x_test=x_test,
+  y_test=y_test,
+  hyperparam=hyperparam,
+  y_name=y_name,
+  seed = NULL,
+  kfold = NULL
+){
+  # Initialize method
+  customRF <- list(type = "Classification", library = "randomForest", loop = NULL)
+  customRF$parameters <- data.frame(parameter = c("mtry", "ntree"), class = rep("numeric", 2), label = c("mtry", "ntree"))
+  customRF$grid <- function(x, y, len = NULL, search = "grid") {}
+  customRF$fit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
+    randomForest(x, y, mtry = param$mtry, ntree=param$ntree, ...)
+  }
+  customRF$predict <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
+    predict(modelFit, newdata = newdata
+    )
+  customRF$prob <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
+    predict(modelFit, newdata, type = "prob")
+  customRF$sort <- function(x) x[order(x[,1]),]
+  customRF$levels <- function(x) x$classes
+  set.seed(seed)
+  
+  message("        Fitting...")
+  
+  if(is.null(kfold)){ # if whole data training
+    control <- trainControl(method="none")
+  }else{
+    control <- trainControl(method="repeatedcv", number=kfold, repeats=1)
+  }
+  
+  if(is.null(hyperparam[[1]]) & is.null(hyperparam[[2]])){
+    tunegrid <- expand.grid(.mtry=round(ncol(x_train)/3), .ntree= 500) # here the hyperparams are feeded
+  }else{
+    tunegrid <- expand.grid(.mtry=hyperparam[[1]], .ntree= hyperparam[[2]]) # here the hyperparams are feeded
+  }
+  
+  fit <- train(x = as.data.frame(x_train),
+               y = factor(as.character(y_train)),
+               method=customRF, 
+               metric="Kappa", 
+               tuneGrid=tunegrid, 
+               trControl=control)
+  fit <<- fit
+  
+  message("        Validating...")
+  pred <- predict(fit, x_test)
+  pred <- as.data.frame(pred)[,1]
+  diff <- NULL
   
   return(list(pred=pred, diff=diff, fit=fit))
 }######################################################

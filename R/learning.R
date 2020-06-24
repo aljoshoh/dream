@@ -86,15 +86,16 @@ cv <- function(
   message("Creating feature set names ...")
   
   fold_ids <- cut(1:nrow(feature_matrix), breaks = kfold, labels = F)
+  
   size <- floor(((kfold-1)/kfold)*nrow(feature_matrix))
   message(paste0("Fold size is ",as.character(size)))
   message(paste0("Test size is ", as.character(nrow(feature_matrix)-size)))
   
   set.seed(seed = seed)
   feature_matrix <- feature_matrix[sample(nrow(feature_matrix)),]
-  
-  test_sets <- lapply(1:kfold, function(x) row.names(feature_matrix[fold_ids == x,]))
-  train_sets <- lapply(1:kfold, function(x) row.names(feature_matrix[fold_ids != x,]))
+
+  test_sets <- lapply(1:kfold, function(x) row.names(feature_matrix[fold_ids == x,,drop = F]))
+  train_sets <- lapply(1:kfold, function(x) row.names(feature_matrix[fold_ids != x,,drop = F]))
   
   return(list(test_sets = test_sets, 
               train_sets = train_sets
@@ -179,7 +180,7 @@ make_fit <- function(
         x_train <- feature_matrix[names(y_train[,y_name]),FILTER_FEATURE_NAMES[[j]]] # add different for each drug
       }
       
-      x_test <- feature_matrix[folds$test_sets[[i]],FILTER_FEATURE_NAMES[[j]]]
+      x_test <- feature_matrix[folds$test_sets[[i]],FILTER_FEATURE_NAMES[[j]], drop = F]
       y_test <- phenotype_matrix[ folds$test_sets[[i]] ,j]
       
       set.seed(seed)
@@ -224,20 +225,41 @@ make_fit <- function(
                                 seed = seed
         )
       }
+      
+      if(method == "glm_bin"){
+        model <- use_glm_binary(x_train, y_train, x_test, y_test,
+                         hyperparam = hyperparam,
+                         y_name = y_name,
+                         cvglm = cvglm
+        )
+      }
+      
+      if(method == "rf_bin"){
+        model <- use_rf_bin(x_train, y_train, x_test, y_test,
+                                hyperparam = hyperparam,
+                                y_name = y_name,
+                                seed = seed,
+                                kfold = length(folds$train_set) # how many internal folds
+                                
+        )
+      }
       ############################
       mse <- mean(model$diff*model$diff)
       
-      if(!(method %in% c("rfsurv","cox"))){
-        cor <- cor(model$pred, y_test, use = "complete.obs", method = "spearman")
+      if(method %in% c("glm","rf","dnn")){
+        cor <- tryCatch(cor(model$pred, y_test, use = "complete.obs", method = "spearman"), error = function(e){message("no correlation calculated");return(NA)})
         score[i,j] <- cor
-      } else {
+      } 
+      if(method %in% c("rfsurv","cox")){
         ground <- as.data.frame(as.matrix(y_test))
         s <- cbind(model$pred, ground)
         cor <- concordance.index(x=s[,1], surv.time=s[,2], surv.event=s[,3])$c.index # concordance index
         print(cor)
         score[[i,j]] <- cor
       }
-      
+      if(method %in% c("glm_bin","rf_bin")){
+        score[i,j] <- NA
+      }
       
       if(returnFit == T){
         param[[i,j]] <- list(model$fit)
@@ -388,6 +410,24 @@ make_fit_whole <- function(
                          hyperparam = hyperparam,
                          y_name = y_name,
                          seed = seed
+        )
+      }
+      
+      if(method == "glm_bin"){
+        model <- use_glm_binary(x_train, y_train, x_test, y_test,
+                                hyperparam = hyperparam,
+                                y_name = y_name,
+                                cvglm = F
+        )
+      }
+      
+      if(method == "rf_bin"){
+        model <- use_rf_bin(x_train, y_train, x_test, y_test,
+                               hyperparam = hyperparam,
+                               y_name = y_name,
+                               seed = seed
+                              
+                               
         )
       }
       #######################METHOD

@@ -17,6 +17,7 @@ run_pipeline_benchmark <- function(
   cvseed = 123,
   CVBuilt = NULL,
   stack = F,
+  null.model = F,
   args = NULL# <---------------------------------------------------------------------------------------------------------------- needs to be implemented consistently
 ){
   if(submission){setwd("/storage/groups/cbm01/workspace/dream_aml/")}
@@ -28,7 +29,12 @@ run_pipeline_benchmark <- function(
   if(stack){
     rna <- get_features(feature_path, matrixfy = F)
   }
-  
+  if(null.model == T){
+    message("Randomize response variable..")
+    set.seed(cvseed)
+    random.names <- row.names(auc)[sample(1:nrow(auc))]
+    row.names(auc) = random.names
+  }
   # Cross-Validation initiation
   if(!is.null(CVBuilt)){
     message("Using CV-Built !")
