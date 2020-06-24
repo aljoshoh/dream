@@ -13,15 +13,22 @@ use_glm <- function(
   hyperparam=hyperparam,
   y_name=y_name,
   seed = F,
-  cvglm = T
+  cvglm = T,
+  kfold = NULL
 ){
   alpha = hyperparam["alpha"]
   y_train <- y_train[,as.character(y_name)]
   
   message("        Fitting...")
   if(cvglm ==T){
-    fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha)
-    fit <<- fit
+    if(class(hyperparam)=="list"){
+      tunegrid <- expand.grid(alpha = hyperparam[[1]], lambda = hyperparam[[2]])
+      control <- trainControl(method="repeatedcv", number=kfold, repeats=1)
+      fit <- train(x = x_train, y = y_train, method = "glmnet",metric = "RMSE",tuneGrid = tunegrid, trControl = control)
+    }else{
+      fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha)
+      fit <<- fit
+    }
   }else{
     fit <- glmnet::glmnet(x = x_train, y = y_train, alpha = alpha)
   }
@@ -57,7 +64,13 @@ use_cox <- function(
   x_train <- data.matrix(as.data.frame(x_train))
   message("        Fitting...")
   if(cvglm ==T){
-    fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha, family="cox")
+    if(class(hyperparam)=="list"){
+      tunegrid <- expand.grid(alpha = hyperparam[[1]], lambda = hyperparam[[2]])
+      control <- trainControl(method="repeatedcv", number=kfold, repeats=1)
+      fit <- train(x = x_train, y = y_train, method = "glmnet",metric = "RMSE",tuneGrid = tunegrid, trControl = control, family = "cox")
+    }else{
+      fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha, family="cox")
+    }
   }else{
     fit <- glmnet::glmnet(x = x_train, y = y_train, alpha = alpha, family = "cox")
   }
@@ -227,7 +240,13 @@ use_glm_binary <- function(
   y_train <- factor(y_train)
   message("        Fitting...")
   if(cvglm ==T){
-    fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha, family="binomial", type.measure = "class")
+    if(class(hyperparam)=="list"){
+      tunegrid <- expand.grid(alpha = hyperparam[[1]], lambda = hyperparam[[2]])
+      control <- trainControl(method="repeatedcv", number=kfold, repeats=1)
+      fit <- train(x = x_train, y = y_train, method = "glmnet",metric = "RMSE",tuneGrid = tunegrid, trControl = control, family = "binomial",type.measure = "class")
+    }else{
+      fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha, family="binomial", type.measure = "class")
+    }
   }else{
     fit <- glmnet::glmnet(x = x_train, y = y_train, alpha = alpha, family="binomial")
   }

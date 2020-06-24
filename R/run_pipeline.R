@@ -9,7 +9,7 @@ run_pipeline_benchmark <- function(
   response_path = NULL, # path to response
   submission = T,
   kfold = 10,
-  FUN = function(x,y){res<-lapply(1:ncol(y),function(z) colnames(x));return(res)}, # Function on feature set of training data, must return matrix of features (same names as input)
+  FUN = function(feature, auc){res<-lapply(1:ncol(auc),function(z) colnames(feature));return(res)}, # Function on feature set of training data, must return matrix of features (same names as input)
   method = "glm",
   hyperparam = c("alpha"=0.5),
   cvglm = T,

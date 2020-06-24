@@ -112,7 +112,7 @@ make_fit <- function(
   feature_matrix = NULL, # Numerical feature matrix
   phenotype_matrix = NULL, # Numerical pheontype matrix 
   folds = NULL, # fold object created in last step
-  FUN = function(x,y){res<-lapply(1:ncol(y),function(z) colnames(x));return(res)}, # Pass filtering function for cv sets internally, default is identity function
+  FUN = NULL, # Pass filtering function for cv sets internally, default is identity function
   hyperparam = c("alpha"=0.5), # Hyperparamter for methods
   method = "glm", # Method
   cvglm = F, # If glm should be cross-validated for the lambda parameter, e.g. for benchmarking
@@ -189,7 +189,8 @@ make_fit <- function(
         model <- use_glm(x_train, y_train, x_test, y_test,
                          hyperparam = hyperparam,
                          y_name = y_name,
-                         cvglm = cvglm
+                         cvglm = cvglm,
+                         kfold = length(folds$train_set) # how many internal folds
                          )
       }
       
@@ -197,7 +198,8 @@ make_fit <- function(
         model <- use_cox(x_train, y_train, x_test, y_test,
                          hyperparam = hyperparam,
                          y_name = y_name,
-                         cvglm = cvglm
+                         cvglm = cvglm,
+                         kfold = length(folds$train_set) # how many internal folds
         )
       }
       
@@ -230,7 +232,8 @@ make_fit <- function(
         model <- use_glm_binary(x_train, y_train, x_test, y_test,
                          hyperparam = hyperparam,
                          y_name = y_name,
-                         cvglm = cvglm
+                         cvglm = cvglm,
+                         kfold = length(folds$train_set) # how many internal folds
         )
       }
       
