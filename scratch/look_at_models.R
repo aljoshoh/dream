@@ -43,7 +43,7 @@ if(FALSE){
   }
   lapply(1:122, function(x) max(na.omit(array[x,]))) %>% unlist %>% mean
   which.model <- lapply(1:122, function(x) collection[which.max(na.omit(array[x,]))]) %>% unlist
-}
+
 save(which.model, file = paste0("outputs/performances/",directory,"_",descriptor,"_which.model.RData"))
 
 performance <- unlist(lapply(1:ncol(resp), function(y){
@@ -51,3 +51,8 @@ performance <- unlist(lapply(1:ncol(resp), function(y){
   if(is.na(tmp)){tmp <- 0}else{tmp}
 }))
 mean(performance, na.rm = T)
+
+df <- data.frame(`Model with best performance per drug` = factor(which.model), check.names = F)
+ggplot(data=df, aes(x = `Model with best performance per drug`))+geom_bar()+
+  theme(axis.text.x = element_text(angle = 90, size = rel(1.8)))
+}

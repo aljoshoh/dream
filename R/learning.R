@@ -14,6 +14,7 @@ suppressPackageStartupMessages({
   library(survival)
   library(Hmisc)
   library(randomForestSRC)
+  library(survcomp)
 })
 # library(caret) not yet in image !!!
 

@@ -24,7 +24,7 @@ use_glm <- function(
     if(class(hyperparam)=="list"){
       tunegrid <- expand.grid(alpha = hyperparam[[1]], lambda = hyperparam[[2]])
       control <- trainControl(method="repeatedcv", number=kfold, repeats=1)
-      fit <- train(x = x_train, y = y_train, method = "glmnet",metric = "RMSE",tuneGrid = tunegrid, trControl = control)
+      fit <- caret::train(x = x_train, y = y_train, method = "glmnet",metric = "RMSE",tuneGrid = tunegrid, trControl = control)
     }else{
       fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha)
       fit <<- fit
@@ -57,7 +57,8 @@ use_cox <- function(
   hyperparam=hyperparam,
   y_name=y_name,
   seed = F,
-  cvglm = T
+  cvglm = T,
+  kfold = NULL
 ){
   alpha = hyperparam["alpha"]
   y_train <- y_train[,as.character(y_name)]
@@ -65,9 +66,10 @@ use_cox <- function(
   message("        Fitting...")
   if(cvglm ==T){
     if(class(hyperparam)=="list"){
+      
       tunegrid <- expand.grid(alpha = hyperparam[[1]], lambda = hyperparam[[2]])
       control <- trainControl(method="repeatedcv", number=kfold, repeats=1)
-      fit <- train(x = x_train, y = y_train, method = "glmnet",metric = "RMSE",tuneGrid = tunegrid, trControl = control, family = "cox")
+      fit <- carettrain(x = x_train, y = y_train, method = "glmnet",tuneGrid = tunegrid, trControl = control, family = "cox")
     }else{
       fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha, family="cox")
     }
@@ -167,7 +169,7 @@ use_rf <- function(
     tunegrid <- expand.grid(.mtry=hyperparam[[1]], .ntree= hyperparam[[2]]) # here the hyperparams are feeded
   }
   
-  fit <- train(x = as.data.frame(x_train),
+  fit <- caret::train(x = as.data.frame(x_train),
                   y = as.numeric(y_train),
                   method=customRF, 
                   metric="RMSE", 
@@ -233,7 +235,8 @@ use_glm_binary <- function(
   hyperparam=hyperparam,
   y_name=y_name,
   seed = F,
-  cvglm = T
+  cvglm = T,
+  kfold = NULL
 ){
   alpha = hyperparam["alpha"]
   y_train <- y_train[,as.character(y_name)]
@@ -243,7 +246,7 @@ use_glm_binary <- function(
     if(class(hyperparam)=="list"){
       tunegrid <- expand.grid(alpha = hyperparam[[1]], lambda = hyperparam[[2]])
       control <- trainControl(method="repeatedcv", number=kfold, repeats=1)
-      fit <- train(x = x_train, y = y_train, method = "glmnet",metric = "RMSE",tuneGrid = tunegrid, trControl = control, family = "binomial",type.measure = "class")
+      fit <- caret::train(x = x_train, y = y_train, method = "glmnet",metric = "RMSE",tuneGrid = tunegrid, trControl = control, family = "binomial",type.measure = "class")
     }else{
       fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha, family="binomial", type.measure = "class")
     }
@@ -310,7 +313,7 @@ use_rf_bin <- function(
     tunegrid <- expand.grid(.mtry=hyperparam[[1]], .ntree= hyperparam[[2]]) # here the hyperparams are feeded
   }
   
-  fit <- train(x = as.data.frame(x_train),
+  fit <- caret::train(x = as.data.frame(x_train),
                y = factor(as.character(y_train)),
                method=customRF, 
                metric="Kappa", 
