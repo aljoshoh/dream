@@ -18,6 +18,7 @@ run_pipeline_benchmark <- function(
   CVBuilt = NULL,
   stack = F,
   null.model = F,
+  parallel = F,
   args = NULL# <---------------------------------------------------------------------------------------------------------------- needs to be implemented consistently
 ){
   if(submission){setwd("/storage/groups/cbm01/workspace/dream_aml/")}
@@ -46,7 +47,7 @@ run_pipeline_benchmark <- function(
   list_glm <- make_fit(feature_matrix = rna, phenotype_matrix = auc, folds = CV,
                        method = method, 
                        hyperparam = hyperparam,
-                       cvglm = T, FUN = FUN, returnFit = returnFit, stack = stack, args = args)
+                       cvglm = T, FUN = FUN, returnFit = returnFit, stack = stack, args = args, parallel = parallel)
   
   return(list_glm)
 }######################################################

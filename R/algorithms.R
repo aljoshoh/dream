@@ -12,7 +12,7 @@ use_glm <- function(
   y_test=y_test,
   hyperparam=hyperparam,
   y_name=y_name,
-  seed = F,
+  seed = 123,
   cvglm = T,
   kfold = NULL
 ){
@@ -56,7 +56,7 @@ use_cox <- function(
   y_test=y_test,
   hyperparam=hyperparam,
   y_name=y_name,
-  seed = F,
+  seed = seed,
   cvglm = T,
   kfold = NULL
 ){
@@ -66,10 +66,19 @@ use_cox <- function(
   message("        Fitting...")
   if(cvglm ==T){
     if(class(hyperparam)=="list"){
+      grid <- do.call(expand.grid, hyperparam)
+      message(paste0("         Number of Runs...",as.character(nrow(grid))))
+      deviance <- list();for(i in 1:nrow(grid)){
+        message(paste0("         Tuning Run...",as.character(i)))
+        set.seed(seed)
+        fit <- cv.glmnet(x = x_train, y = y_train, alpha = grid[i,"alpha"], family="cox", kfold = grid[i,"kfold"])
+        deviance[[i]] <- fit$cvm
+      }
+      # Minimize deviance
+      which <- which.min(lapply(deviance, function(x) min(x)))
+      set.seed(seed)
+      fit <- cv.glmnet(x = x_train, y = y_train, alpha = grid[which,"alpha"], family="cox", kfold = grid[which,"kfold"])
       
-      tunegrid <- expand.grid(alpha = hyperparam[[1]], lambda = hyperparam[[2]])
-      control <- trainControl(method="repeatedcv", number=kfold, repeats=1)
-      fit <- carettrain(x = x_train, y = y_train, method = "glmnet",tuneGrid = tunegrid, trControl = control, family = "cox")
     }else{
       fit <- cv.glmnet(x = x_train, y = y_train, alpha = alpha, family="cox")
     }
@@ -110,9 +119,23 @@ use_rfSurvival <- function(
   if(is.null(hyperparam[[1]]) & is.null(hyperparam[[2]])){
     hyperparam <- list(c(ncol(x_train)/3),c(500))  # here the hyperparams are feeded
   }
-
+  ### Hyperparam tuning search
+    grid <- do.call(expand.grid, hyperparam)
+    message(paste0("         Number of Runs...",as.character(nrow(grid))))
+    deviance <- list();for(i in 1:nrow(grid)){
+      message(paste0("         Tuning Run...",as.character(i)))
+      set.seed(seed)
+      fit <- rfsrc(Surv(time = x.time, event = x.status) ~ .,data = Train, ntree=grid[i,"ntree"], mtry = grid[i,"mtry"], splitrule = "logrank")
+      #deviance[[i]] <- fit$cvm # ADD THIS
+      deviance[[i]] <- 0
+    }
+    # Minimize deviance
+    which <- which.min(lapply(deviance, function(x) min(x)))
+    set.seed(seed)
+    fit <- rfsrc(Surv(time = x.time, event = x.status) ~ .,data = Train, ntree=grid[which,"ntree"], mtry=grid[which,"ntree"], splitrule = "logrank")
+    
   # 1) train model
-  fit <- rfsrc(Surv(time = x.time, event = x.status) ~ .,data = Train, ntree=hyperparam[[2]], mtry =hyperparam[[1]], splitrule = "logrank")
+  #fit <- rfsrc(Surv(time = x.time, event = x.status) ~ .,data = Train, ntree=hyperparam[[2]], mtry =hyperparam[[1]], splitrule = "logrank")
   # 2) predict on validation set
   if(!is.null(x_test)){
     survival.results <- predict.rfsrc(fit, newdata = Pred)

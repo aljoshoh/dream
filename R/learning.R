@@ -120,7 +120,8 @@ make_fit <- function(
   seed = 123, # Seed for RF method
   returnFit = T, # Logical if $param should be returned for all folds at fit, otherwise it returns lambda.min
   stack = NULL, # for generally having a unique dataframe for each drug
-  args = args
+  args = args,
+  parallel = parallel
 ){
   if(!stack){
     if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}
@@ -138,7 +139,7 @@ make_fit <- function(
   
   message("Starting to fit ",method," ...")
   score <- matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix))
-  gene_names_filtered <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
+  #gene_names_filtered <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix))) # SELECTED FEATURES
   param <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
   
   if(method %in% c("rfsurv","cox")){ # Cox needs special treatment, this puts the data-matrix back to a single column
@@ -148,12 +149,22 @@ make_fit <- function(
   }
   
   feature_matrix_prestack <- feature_matrix
-  for(i in 1:length(folds$train_set)){ # for all folds
-    
+  
+  #Initialize parallel
+  if(parallel != F){
+    cl <- parallel::makeCluster(parallel)
+    doParallel::registerDoParallel(cl)
+  }
+  
+  
+  loop <- foreach(i = 1:length(folds$train_set),
+                  .packages = c("dplyr", "survival","cv.glmnet","randomForest","randomForestSRC")
+                  ) %dopar% { # for all folds
+    source("/storage/groups/cbm01/workspace/dream_aml/R/algorithms.R")
+                    
     ########PHONG METHOD
     if(!stack){
       message(paste0("Executing feature selection for fold ",as.character(i)))
-      test <<- feature_matrix[folds$train_sets[[i]],]
       FILTER_FEATURE_NAMES <- FUN(feature = feature_matrix[feature = folds$train_sets[[i]],], auc = phenotype_matrix[folds$train_sets[[i]],])
       ####################
       message(paste0("-> Length of partial response: ",as.character(length(FILTER_FEATURE_NAMES))," !"))
@@ -200,7 +211,8 @@ make_fit <- function(
                          hyperparam = hyperparam,
                          y_name = y_name,
                          cvglm = cvglm,
-                         kfold = length(folds$train_set) # how many internal folds
+                         kfold = length(folds$train_set), # how many internal folds
+                         seed = seed
         )
       }
       
@@ -253,29 +265,31 @@ make_fit <- function(
       if(!(method %in% c("rfsurv","cox"))){
         cor <- tryCatch(cor(model$pred, y_test, use = "complete.obs", method = "spearman"), error = function(e){message("no correlation calculated");return(NA)})
         if(is.null(cor)){cor <- NA}
-        score[i,j] <- cor
+        score[j] <- cor
       } 
       if(method %in% c("rfsurv","cox")){
         ground <- as.data.frame(as.matrix(y_test))
         s <- cbind(model$pred, ground)
         cor <- concordance.index(x=s[,1], surv.time=s[,2], surv.event=s[,3])$c.index # concordance index
         print(cor)
-        score[[i,j]] <- cor
+        score[[j]] <- cor
       }
       if(method %in% c("glm_bin","rf_bin")){
-        score[i,j] <- NA
+        score[j] <- NA
       }
       
       if(returnFit == T){
-        param[[i,j]] <- list(model$fit)
+        param[[j]] <- list(model$fit)
       }else{
-        param[i,j] <- model$fit$lambda.min
+        #param[i,j] <- model$fit$lambda.min DEPRECATED
+        param[[j]] <- NA
       }
-      gene_names_filtered[[i,j]] <- list(FILTER_FEATURE_NAMES[[j]])
-    }
+      #gene_names_filtered[[i,j]] <- list(FILTER_FEATURE_NAMES[[j]]) # SELECTED FEATURES
+    }#j
     ##################
-  }
-  
+    list(score = score, param = param)
+  }#i
+  print(loop)
   message("End method ...")
   # gives error since is closes connection for all the workers i guess
   if(method %in% c("dnn")){
@@ -285,9 +299,10 @@ make_fit <- function(
     h2o:::.h2o.garbageCollect()
   }
 
-  return(list(score=score,
-              param = param,
-              gene_names_filtered = gene_names_filtered,
+  return(list(#score=loop$score,
+              #param = loop$param,
+              model = loop,
+              gene_names_filtered = NA,#gene_names_filtered,
               cv = folds,
               returnFit = returnFit
               ))
@@ -452,6 +467,10 @@ make_fit_whole <- function(
     h2o:::.h2o.garbageCollect()
     h2o:::.h2o.garbageCollect()
     h2o:::.h2o.garbageCollect()
+  }
+  
+  if(parallel != F){
+    parallel::stopCluster(cl)
   }
   
   return(list(score=score,
