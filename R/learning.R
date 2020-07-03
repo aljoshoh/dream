@@ -168,6 +168,7 @@ make_fit <- function(
       FILTER_FEATURE_NAMES <- FUN(feature = feature_matrix[feature = folds$train_sets[[i]],], auc = phenotype_matrix[folds$train_sets[[i]],])
       ####################
       message(paste0("-> Length of partial response: ",as.character(length(FILTER_FEATURE_NAMES))," !"))
+      if(length(FILTER_FEATURE_NAMES) == 0){stop("NO CORRELATED FEATURES FOUND IN FEATURE SELECTION")}
     }
     
     #########BIG FOR LOOP
