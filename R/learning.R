@@ -120,7 +120,7 @@ make_fit <- function(
   seed = 123, # Seed for RF method
   returnFit = T, # Logical if $param should be returned for all folds at fit, otherwise it returns lambda.min
   stack = NULL, # for generally having a unique dataframe for each drug
-  args = args,
+  args = F,
   parallel = parallel
 ){
   if(!stack){
@@ -136,11 +136,13 @@ make_fit <- function(
     #port <- 8500 #+as.numeric(args), cannot start at multiple ports
     #h2o.init(port=port)
   }
+  if(args!=F){
+    phenotype_matrix <- phenotype_matrix[,args,drop=F]
+  }
+  
   
   message("Starting to fit ",method," ...")
-  score <- matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix))
-  #gene_names_filtered <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix))) # SELECTED FEATURES
-  param <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix)))
+
   
   if(method %in% c("rfsurv","cox")){ # Cox needs special treatment, this puts the data-matrix back to a single column
     survival <- as.data.frame(Surv(event = phenotype_matrix[,1], time = phenotype_matrix[,2]))
@@ -158,14 +160,20 @@ make_fit <- function(
   
   
   loop <- foreach(i = 1:length(folds$train_set),
-                  .packages = c("dplyr", "survival","cv.glmnet","randomForest","randomForestSRC")
+                  .packages = c("dplyr", "survival","glmnet","randomForest","randomForestSRC")
                   ) %dopar% { # for all folds
     source("/storage/groups/cbm01/workspace/dream_aml/R/algorithms.R")
-                    
+    
+    #Initialize results
+    score <- list()
+    #gene_names_filtered <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix))) # SELECTED FEATURES
+    param <- list()
+    gene_names_filtered <- list()                
+    
     ########PHONG METHOD
     if(!stack){
       message(paste0("Executing feature selection for fold ",as.character(i)))
-      FILTER_FEATURE_NAMES <- FUN(feature = feature_matrix[feature = folds$train_sets[[i]],], auc = phenotype_matrix[folds$train_sets[[i]],])
+      FILTER_FEATURE_NAMES <- FUN(feature = feature_matrix[feature = folds$train_sets[[i]],], auc = phenotype_matrix[folds$train_sets[[i]],,drop=F])
       ####################
       message(paste0("-> Length of partial response: ",as.character(length(FILTER_FEATURE_NAMES))," !"))
       if(length(FILTER_FEATURE_NAMES) == 0){stop("NO CORRELATED FEATURES FOUND IN FEATURE SELECTION")}
@@ -285,12 +293,12 @@ make_fit <- function(
         #param[i,j] <- model$fit$lambda.min DEPRECATED
         param[[j]] <- NA
       }
-      #gene_names_filtered[[i,j]] <- list(FILTER_FEATURE_NAMES[[j]]) # SELECTED FEATURES
+      gene_names_filtered[[j]] <- list(FILTER_FEATURE_NAMES[[j]]) # SELECTED FEATURES
     }#j
     ##################
-    list(score = score, param = param)
+    list(score = score, param = param, gene_names_filtered = gene_names_filtered)
   }#i
-  print(loop)
+  #print(loop)
   message("End method ...")
   # gives error since is closes connection for all the workers i guess
   if(method %in% c("dnn")){
@@ -303,7 +311,7 @@ make_fit <- function(
   return(list(#score=loop$score,
               #param = loop$param,
               model = loop,
-              gene_names_filtered = NA,#gene_names_filtered,
+              gene_names_filtered = gene_names_filtered,
               cv = folds,
               returnFit = returnFit
               ))

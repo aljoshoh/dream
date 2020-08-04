@@ -19,7 +19,7 @@ run_pipeline_benchmark <- function(
   stack = F,
   null.model = F,
   parallel = F,
-  args = NULL# <---------------------------------------------------------------------------------------------------------------- needs to be implemented consistently
+  args = F
 ){
   if(submission){setwd("/storage/groups/cbm01/workspace/dream_aml/")}
   

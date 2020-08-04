@@ -14,6 +14,8 @@ submission/sc1/models/*
 submission/sc2/models/*
 images/*
 output/*
+dfg/data/*
+dfg/*
 
 !features/.gitkeep
 !metadata/.gitkeep
