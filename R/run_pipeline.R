@@ -19,7 +19,8 @@ run_pipeline_benchmark <- function(
   stack = F,
   null.model = F,
   parallel = F,
-  args = F
+  args = F,
+  directory = "/storage/groups/cbm01"
 ){
   if(submission){setwd("/storage/groups/cbm01/workspace/dream_aml/")}
   
@@ -47,7 +48,7 @@ run_pipeline_benchmark <- function(
   list_glm <- make_fit(feature_matrix = rna, phenotype_matrix = auc, folds = CV,
                        method = method, 
                        hyperparam = hyperparam,
-                       cvglm = T, FUN = FUN, returnFit = returnFit, stack = stack, args = args, parallel = parallel)
+                       cvglm = T, FUN = FUN, returnFit = returnFit, stack = stack, args = args, parallel = parallel, directory = directory)
   
   return(list_glm)
 }######################################################

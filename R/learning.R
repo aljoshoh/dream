@@ -121,7 +121,8 @@ make_fit <- function(
   returnFit = T, # Logical if $param should be returned for all folds at fit, otherwise it returns lambda.min
   stack = NULL, # for generally having a unique dataframe for each drug
   args = F,
-  parallel = parallel
+  parallel = parallel,
+  directory = directory
 ){
   if(!stack){
     if(!is.matrix(feature_matrix)){stop("The feature matrix is not a numerical matrix !")}
@@ -162,7 +163,7 @@ make_fit <- function(
   loop <- foreach(i = 1:length(folds$train_set),
                   .packages = c("dplyr", "survival","glmnet","randomForest","randomForestSRC")
                   ) %dopar% { # for all folds
-    source("/storage/groups/cbm01/workspace/dream_aml/R/algorithms.R")
+    source(paste0(directory,"algorithms.R"))
     
     #Initialize results
     score <- list()
