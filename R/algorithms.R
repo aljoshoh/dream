@@ -92,6 +92,7 @@ use_cox <- function(
     x_test <- data.matrix(as.data.frame(x_test))
     pred <- predict(fit, x_test, s = 'lambda.min')
     diff <- NULL # does not work for survival
+    diff <- list(message="this is the used hyperparameters",alpha = grid[which,"alpha"], kfold = grid[which,"kfold"])
   }else{
     pred <- NULL
     diff <- NULL
