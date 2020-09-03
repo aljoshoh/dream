@@ -156,14 +156,17 @@ make_fit <- function(
   if(parallel != F){
     cl <- parallel::makeCluster(parallel)
     doParallel::registerDoParallel(cl)
+  }else{
+    registerDoSEQ()
   }
   
-  
   loop <- foreach(i = 1:length(folds$train_set),
-                  .packages = c("dplyr", "survival","glmnet","randomForest","randomForestSRC")
+                  .packages = c("dplyr", "survival","glmnet","randomForest","randomForestSRC","survcomp","glmnetUtils"), .verbose = F,
+                  .errorhandling = "stop", .combine = "c"
                   ) %dopar% { # for all folds
+                    
     source("/storage/groups/cbm01/workspace/dream_aml/R/algorithms.R")
-    
+                    
     #Initialize results
     score <- list()
     #gene_names_filtered <- as.data.frame(matrix(NA,nrow = length(folds$train_set), ncol = ncol(phenotype_matrix))) # SELECTED FEATURES
@@ -269,7 +272,7 @@ make_fit <- function(
         )
       }
       ############################
-      mse <- mean(model$diff*model$diff)
+      #mse <- mean(model$diff*model$diff)
       
       if(!(method %in% c("rfsurv","cox"))){
         cor <- tryCatch(cor(model$pred, y_test, use = "complete.obs", method = "spearman"), error = function(e){message("no correlation calculated");return(NA)})
@@ -296,7 +299,7 @@ make_fit <- function(
       gene_names_filtered[[j]] <- list(FILTER_FEATURE_NAMES[[j]]) # SELECTED FEATURES
     }#j
     ##################
-    list(score = score, param = param, gene_names_filtered = gene_names_filtered)
+    list(list(score = score, param = param, gene_names_filtered = gene_names_filtered, hypers = list(model$diff))) # potential source of error
   }#i
   #print(loop)
   message("End method ...")
@@ -311,7 +314,7 @@ make_fit <- function(
   return(list(#score=loop$score,
               #param = loop$param,
               model = loop,
-              gene_names_filtered = gene_names_filtered,
+              #gene_names_filtered = gene_names_filtered,
               cv = folds,
               returnFit = returnFit
               ))
