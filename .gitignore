@@ -1,3 +1,7 @@
+# antipd1
+
+
+# beataml
 beataml/resources/*
 beataml/chembl/*
 beataml/dream_data/
@@ -22,3 +26,6 @@ beataml/dfg/*
 !beataml/chembl/.gitkeep
 !beataml/resources/.gitkeep
 !beataml/outputs/.gitkeep
+
+# matthias file ask for permissions
+.features/
