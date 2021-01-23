@@ -12,12 +12,13 @@ beataml/outputs/*
 beataml/metadata/*
 beataml/dream_data_leaderboard/
 beataml/features_validation/*
-beataml/submission/sc1/models/*
-beataml/submission/sc2/models/*
+beataml/submission/*
+beataml/sc1
+beataml/sc2
 beataml/images/*
 beataml/output/*
-beataml/dfg/data/*
-beataml/dfg/*
+dfg/data/*
+dfg/*
 
 !beataml/features/.gitkeep
 !beataml/metadata/.gitkeep
