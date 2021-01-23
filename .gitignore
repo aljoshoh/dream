@@ -1,5 +1,7 @@
 # antipd1
+antipd1/data/*
 
+!antipd1/data/.gitkeep
 
 # beataml
 beataml/resources/*
@@ -30,3 +32,7 @@ dfg/*
 
 # matthias file ask for permissions
 .features/
+
+.DS_Store
+._.DS_Store
+
