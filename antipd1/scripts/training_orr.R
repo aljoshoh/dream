@@ -10,13 +10,13 @@ iter_cvseed <- 1
 iter_cvseed <- args1
 test_run <- T
 benchMark <- T
-model_id <- "first"
+model_id <- "final"
 
 
 # set paths and load libraries
-setwd("/storage/groups/cbm01/workspace/alexander.ohnmacht/AML/methylation")
-dir.create(paste0(getwd(),"/metadata/models/",model_id))
-logfile <- paste0(getwd(),"/metadata/models/",model_id,"/","logs.txt")
+setwd("/storage/groups/cbm01/workspace/alexander.ohnmacht/dream/antipd1")
+dir.create(paste0(getwd(),"/models/",model_id))
+logfile <- paste0(getwd(),"/models/",model_id,"/","logs.txt")
 cat(paste0("Run name: ", model_id,"\n"), file = logfile, append = T)
 cat(paste0("Small run: ", test_run,"\n"), file = logfile, append = T)
 cat(paste0("Benchmark: ", benchMark,"\n"), file = logfile, append = T)
@@ -26,8 +26,6 @@ add_library_path <- "~/R/x86_64-redhat-linux-gnu-library/3.6"
 
 library(withr)
 add_library_path <- "~/R/x86_64-redhat-linux-gnu-library/3.6"
-with_libpaths(new = add_library_path, library(SIDES, lib.loc = add_library_path))
-
 with_libpaths(new = add_library_path, library(data.table, lib.loc = add_library_path))
 with_libpaths(new = add_library_path, library(Rcpp, lib.loc = add_library_path))
 with_libpaths(new = add_library_path, library(lgr, lib.loc = add_library_path))
@@ -57,8 +55,8 @@ with_libpaths(new = add_library_path, library(xgboost, lib.loc = add_library_pat
 ###############################################
 
 which <- "ORR"
-load("metadata/features.RData")
-load("metadata/response.RData")
+load("metadata/features_symbols_v3_nanostring.RData")
+load("metadata/response_v3_nanostring.RData")
 if(which == "OS"){
   datac <- datac %>% dplyr::select(-c(RECIST, PFS, PFS.Event, Response, Age, Gender))
   datac <- datac %>% dplyr::rename(OSevent = OS.Event)
@@ -80,96 +78,99 @@ if(which == "ORR"){
 data <- merge(datac, datam, by = 0)
 data <- data %>% dplyr::select(-c(Row.names))
 colnames(data) <- make.names(colnames(data))
-data <- as.tibble(data)
+data <- as_tibble(data)
 data[] <- lapply(data, c)
 
+save(data, file  = "metadata/train_data_ORR.RData")
 
 # Define parameters
 if(test_run)
-{n_evals <- 5; btr <- 2; resolution <- 3; reps <- 1}else{n_evals <- 100; btr <- 100; resolution <- 100; reps <- 10;} # limit tuning in testrun
+{n_evals <- 20; btr <- 2; resolution <- 50; reps <- 2}else{n_evals <- 100; btr <- 100; resolution <- 100; reps <- 10;} # limit tuning in testrun
 BootsTrap <- rsmp("bootstrap", ratio = 1, repeats = btr)
 CrossValidation <- rsmp("repeated_cv", folds = 5, repeats = reps)
-measure = msr("classif.ce")
+measure = msr("classif.auc")
 ###############################################
 
 # Define filters
-filt_var <- mlr_pipeops$get("filter", mlr_filters$get("variance"))
-filt_names_1 <- c("variance_filter")
-filt_uni <- flt("importance")
-filt_uni$learner = lrn("classif.ranger")
-filt_uni$learner$param_set$values = list(importance = "impurity")
-filt_uni_pipe <- mlr_pipeops$get("filter", filt_uni)
-filt_names <- c("univariate_filter")
+#filt_var <- mlr_pipeops$get("filter", mlr_filters$get("variance"))
+#filt_names_1 <- c("variance_filter")
+#filt_uni <- flt("importance")
+#filt_uni$learner = lrn("classif.ranger")
+#filt_uni$learner$param_set$values = list(importance = "impurity")
+#filt_uni_pipe <- mlr_pipeops$get("filter", filt_uni)
+#filt_names <- c("univariate_filter")
 
-graph <- mlr_pipeops$get("branch", filt_names_1, id = "branch1") %>>%
-  gunion(list(
-    filt_var
-  ))
-graph <- graph %>>% #unbranch
-  mlr_pipeops$get("unbranch",
-                  filt_names_1,
-                  id = "unbranch1") 
-
-graph <- graph %>>%
-  mlr_pipeops$get("branch", filt_names, id = "branch2") %>>%
-  gunion(list(
-    #filt_mrmr,
-    filt_uni_pipe
-  ))
-graph <- graph %>>% #unbranch
-  mlr_pipeops$get("unbranch",
-                  filt_names,
-                  id = "unbranch2") 
+#graph <- mlr_pipeops$get("branch", filt_names_1, id = "branch1") %>>%
+#  gunion(list(
+#    filt_var
+#  ))
+#graph <- graph %>>% #unbranch
+#  mlr_pipeops$get("unbranch",
+#                  filt_names_1,
+#                  id = "unbranch1") 
+#
+#graph <- graph %>>%
+#  mlr_pipeops$get("branch", filt_names, id = "branch2") %>>%
+#  gunion(list(
+#    #filt_mrmr,
+#    filt_uni_pipe
+#  ))
+#graph <- graph %>>% #unbranch
+#  mlr_pipeops$get("unbranch",
+#                  filt_names,
+#                  id = "unbranch1") 
 ###############################################
 
 
 # Define learner
-lrn_glm <- mlr_pipeops$get("learner", learner = mlr_learners$get("classif.cv_glmnet"))
+lrn_glm <- mlr_pipeops$get("learner", learner = mlr_learners$get("classif.ranger"))
 lrn_names <- c("glm")
 
-graph <- graph %>>% 
-  mlr_pipeops$get("branch", lrn_names, id = "branch3") %>>% 
+graph <- 
+  mlr_pipeops$get("branch", lrn_names, id = "branch1") %>>% 
   gunion(list(
     lrn_glm
   ))
 graph <- graph %>>% #unbranch
   mlr_pipeops$get("unbranch", 
                   lrn_names, 
-                  id = "unbranch3") 
+                  id = "unbranch1") 
 ###############################################
 
 
 # Vis network
-pdf(paste0(getwd(),"/metadata/models/",model_id,"/","graph.pdf"))
+#pdf(paste0(getwd(),"/metadata/models/",model_id,"/","graph.pdf"))
 graph$plot(html = T)
-dev.off()
+#dev.off()
 ###############################################
 
 
 # Make parameters
 ps <- ParamSet$new(list(
-  ParamInt$new("variance.filter.nfeat", lower = 500, upper = 10000, default = 5000),
-  ParamInt$new("importance.filter.nfeat", lower = 100, upper = 10000, default = 500),
+  #ParamInt$new("variance.filter.nfeat", lower = 300, upper = 300, default = 300),
+  #ParamInt$new("importance.filter.nfeat", lower = 100, upper = 300, default = 200),
   #ParamDbl$new("mrmr.filter.nfeat", lower = 2, upper = 50),
-  ParamDbl$new("classif.cv_glmnet.alpha", lower = 0.0, upper = 1),
+  #ParamDbl$new("classif.cv_glmnet.alpha", lower = 0.0, upper = 1),
   
-  ParamFct$new("branch1.selection", levels = filt_names_1),
-  ParamFct$new("branch2.selection", levels = filt_names),
-  ParamFct$new("branch3.selection", levels = lrn_names )
+  #ParamFct$new("branch1.selection", levels = filt_names_1),
+  #ParamFct$new("branch2.selection", levels = filt_names),
+  ParamFct$new("branch1.selection", levels = lrn_names )
 ))
 ###############################################
 
 
 # Define dependencies
-ps$add_dep("variance.filter.nfeat",
-           "branch1.selection", CondEqual$new("variance_filter"))
-ps$add_dep("importance.filter.nfeat",
-           "branch2.selection", CondEqual$new("univariate_filter"))
+#ps$add_dep("variance.filter.nfeat",
+#           "branch1.selection", CondEqual$new("variance_filter"))
+#ps$add_dep("importance.filter.nfeat",
+#           "branch2.selection", CondEqual$new("univariate_filter"))
 ###############################################
 
 
 # tuner
+terminator <- trm("evals", n_evals = n_evals)
 glrn <- GraphLearner$new(graph)
+glrn$predict_type <-  "prob"
 tuner = mlr3tuning::tnr("grid_search", resolution = resolution)
 autotune = AutoTuner$new(
   learner = glrn,
@@ -178,28 +179,28 @@ autotune = AutoTuner$new(
   search_space = ps,
   tuner = tuner,
   terminator = terminator)
-autotune$learner$param_set$values = list(#variance.filter.nfeat = 10000, 
-                             #importance.filter.nfeat = 1000,
-                             #classif.cv_glmnet.alpha = 0,
-                             branch1.selection = "variance_filter",
-                             branch2.selection = "univariate_filter",
-                             branch3.selection = "glm")
+#autotune$learner$param_set$values = list(#variance.filter.nfeat = 10000, 
+#                             #importance.filter.nfeat = 1000,
+#                             #classif.cv_glmnet.alpha = 0,
+#                             branch1.selection = "variance_filter",
+#                             branch2.selection = "univariate_filter",
+#                             branch3.selection = "glm")
 
 
 # Initialize graph task
 glrn <- GraphLearner$new(graph)
-glrn$param_set$values = list(variance.filter.nfeat = 10000, 
-                             importance.filter.nfeat = 1000,
-                             classif.cv_glmnet.alpha = 0,
-                             branch1.selection = "variance_filter",
-                             branch2.selection = "univariate_filter",
-                             branch3.selection = "glm")
+glrn$predict_type <-  "prob"
+glrn$param_set$values = list(#variance.filter.nfeat = 300, 
+                             #importance.filter.nfeat = 200,
+                             #classif.cv_glmnet.alpha = 0,
+                             branch1.selection = "glm"
+                             #branch2.selection = "univariate_filter",
+                             #branch3.selection = "glm"
+                             )
 data$Response <- factor(data$Response)
 task <- TaskClassif$new(id = "response", 
                      backend = data, 
                      target = "Response")
-task$properties = "weights"
-terminator <- trm("evals", n_evals = n_evals)
 ###############################################
 
 # train full
@@ -210,13 +211,14 @@ autotune$train(task) #tuned
 ###############################################
 
 # Save training
-save(glrn, file = paste0(getwd(),"/metadata/models/",model_id,"/","untuned.RData"))
+save(glrn, file = paste0(getwd(),"/models/",model_id,"/","untuned_ORR.RData"))
+save(autotune, file = paste0(getwd(),"/models/",model_id,"/","tuned_ORR.RData"))
 ###############################################
 
 
 # training set results
-features_test <- get(load("metadata/features.RData"))
-response_test <- get(load("metadata/response.RData"))
+features_test <- get(load("metadata/features_symbols_v3_nanostring.RData"))
+response_test <- get(load("metadata/response_v3_nanostring.RData"))
 data_train <- merge(response_test, features_test, by = 0) %>% column_to_rownames("Row.names")
 colnames(data_train) <- make.names(colnames(data_train))
 data_train <- data_train %>% dplyr::rename(OSevent = OS.Event)
@@ -237,10 +239,10 @@ cat("-------\n", file = logfile, append = T)
 if(benchMark){
   set.seed(iter_cvseed)
   design <- benchmark_grid(tasks = task, 
-                           learner = glrn, #list(glrn, autotune),
+                           learner = list(glrn),#, autotune),
                            resamplings = CrossValidation)
   bmr <- benchmark(design)
-  save(bmr, file = paste0(getwd(),"/metadata/models/",model_id,"/","benchmark.RData"))
+  save(bmr, file = paste0(getwd(),"/models/",model_id,"/","benchmark.RData"))
   cat("C-index untuned (test):\n", file = logfile, append = T)
   cat(paste0(bmr$aggregate(),"\n"), file = logfile, append = T)
   cat("-------\n", file = logfile, append = T)
