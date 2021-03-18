@@ -3,9 +3,9 @@ antipd1/data/*
 antipd1/antipd1.Rproj
 antipd1/metadata/*
 !antipd1/data/.gitkeep
-
-
+antipd1/docker/*
 antipd1/models/*
+
 # beataml
 beataml/resources/*
 beataml/chembl/*
